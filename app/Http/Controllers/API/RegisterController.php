@@ -44,7 +44,21 @@ class RegisterController extends BaseController {
 
       $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
+            /*
+            * IMPORTANT:
+            * Do NOT use `unique:users,email` here.
+            *
+            * Reason:
+            * - A user may have already registered but NOT completed OTP verification yet.
+            * - The same email can be submitted again to:
+            *   + verify OTP
+            *   + resend OTP
+            *   + continue an unfinished registration process
+            *
+            * Email uniqueness MUST be handled in business logic,
+            * not in validation rules.
+            */
+            'email' => 'required|string|email|max:255',
             'password' => 'required|string|min:6|confirmed',
       ]);
 
@@ -52,23 +66,67 @@ class RegisterController extends BaseController {
         return $this->sendError('Validation Error.', $validator->errors(), 422);
       }
 
-      $otp = rand(1001, 9998);
-      $expiresAt = Carbon::now()->addMinutes(60);
+      // Block if the email is already registered and verified
+      if ($user && $user->email_verified_at) {
+          return $this->sendError(
+              'Email already used.',
+              ['error' => 'This email is already registered and verified.'],
+              422
+          );
+      }
 
-      $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'otp' => $otp,
-            'otp_expires_at' => $expiresAt,
-            'is_active' => false,
-            'role' => 'customer',
-            'platform' => 'simple',
-      ]);
+      // Ensure user exists
+      if (!$user) {
+          /*
+          * FIRST-TIME REGISTRATION:
+          * Create a new inactive user.
+          * OTP will be generated immediately after creation.
+          */
+          $user = User::create([
+              'name' => $request->name,
+              'email' => $request->email,
+              'password' => Hash::make($request->password),
+              'is_active' => false,
+              'role' => 'customer',
+              'platform' => 'simple'
+          ]);
+      }
+
+      // Ensure user has a valid OTP
+      if (
+          !$user->otp ||
+          !$user->otp_expires_at ||
+          Carbon::now()->gt($user->otp_expires_at)
+      ) {
+          /*
+          * Generate a new OTP if:
+          * - OTP does not exist
+          * - OTP expiration is missing
+          * - OTP has already expired
+          */
+          $otp = rand(1001, 9998);
+          $expiresAt = Carbon::now()->addMinutes(60);
+
+          $user->update([
+              'otp' => $otp,
+              'otp_expires_at' => $expiresAt,
+          ]);
+      } else {
+          // Reuse existing OTP if it is still valid.
+          $otp = $user->otp;
+      }
 
       $this->sendOtpEmail($user->email, $otp, $user->name);
-
-      return $this->sendResponse(['otp' => $otp], 'Registered successfully. Please verify your email with the OTP sent.');
+      
+      return $this->sendResponse([
+          // Current account state: OTP has been sent and email is not verified yet
+          'state' => 'OTP_PENDING',
+          // Registered email used to continue OTP verification flow
+          'email' => $user->email, 
+          //  Do not return OTP
+          // 'otp' => $otp,
+      ], 'Registered successfully. Please verify your email with the OTP sent.');
+      
     }
 
     // ----------------------------
