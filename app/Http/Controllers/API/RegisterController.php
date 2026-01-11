@@ -123,8 +123,8 @@ class RegisterController extends BaseController {
           'state' => 'OTP_PENDING',
           // Registered email used to continue OTP verification flow
           'email' => $user->email, 
-          //  Do not return OTP
-          // 'otp' => $otp,
+          // Generated OTP (DEV / STAGING only, do not return in production)
+          'otp' => $otp,
       ], 'Registered successfully. Please verify your email with the OTP sent.');
       
     }
