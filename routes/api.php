@@ -41,6 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [UserController::class, 'getUserDetail'])->name('api.user');
     Route::post('user', [UserController::class, 'updateUser'])->name('api.updateuser');
 
+    //Store User Details
+    Route::post('storeuserdetail', [UserController::class, 'storeUserDetails'])->name('api.storeUserDetails');
+
     // HRV Logs
     Route::get('hrvs', [HrvController::class, 'index'])->name('api.hrvs.index');
     Route::post('hrvs', [HrvController::class, 'store'])->name('api.hrvs.store');
