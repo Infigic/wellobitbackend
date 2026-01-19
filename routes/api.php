@@ -9,6 +9,7 @@ use App\Http\Controllers\API\RegisterController;
 use App\Http\Controllers\API\ReadinessScoreController;
 use App\Http\Controllers\API\MindfulnessReportController;
 use App\Http\Controllers\API\FaqCategoryController;
+use App\Http\Controllers\API\FaqController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,3 +65,17 @@ Route::post('/mindfulness/reports/fetch', [MindfulnessReportController::class, '
 Route::post('hr', [HrController::class, 'store'])->name('api.hr.store');
 Route::post('hr/fetch', [HrController::class, 'fetchByTimestamp'])->name('api.hr.fetch');
 Route::post('readiness/calculate', [ReadinessScoreController::class, 'calculate'])->name('api.readiness.calculate');
+
+// FAQ
+Route::prefix('faqs')->group(function () {
+    // Public APIs (no auth / no role check)
+    Route::get('/', [FaqController::class, 'index']); // Get list
+    Route::get('{id}', [FaqController::class, 'show'])->whereNumber('id'); // Get detail
+
+    // Protected APIs (admin only)
+    Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+        Route::post('/', [FaqController::class, 'store']); // Create
+        Route::patch('{id}', [FaqController::class, 'update'])->whereNumber('id'); // Update
+        Route::delete('{id}', [FaqController::class, 'destroy'])->whereNumber('id'); // Delete
+    });
+});
