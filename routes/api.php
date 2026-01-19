@@ -8,6 +8,7 @@ use App\Http\Controllers\API\HrController;
 use App\Http\Controllers\API\RegisterController;
 use App\Http\Controllers\API\ReadinessScoreController;
 use App\Http\Controllers\API\MindfulnessReportController;
+use App\Http\Controllers\API\FaqCategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('hrvs', [HrvController::class, 'store'])->name('api.hrvs.store');
 
     Route::get('home', [HrvController::class, 'home'])->name('api.hrvs.home');
+
+    Route::prefix('faq-categories')->group(function () {
+        Route::post('/', [FaqCategoryController::class, 'store']);      
+        Route::get('/', [FaqCategoryController::class, 'index']);       
+        Route::put('{id}', [FaqCategoryController::class, 'update']);   
+        Route::delete('{id}', [FaqCategoryController::class, 'destroy']);
+    });
+
+
 });
 
 Route::post('/mindfulness/reports', [MindfulnessReportController::class, 'storeReports']);
