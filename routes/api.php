@@ -8,6 +8,8 @@ use App\Http\Controllers\API\HrController;
 use App\Http\Controllers\API\RegisterController;
 use App\Http\Controllers\API\ReadinessScoreController;
 use App\Http\Controllers\API\MindfulnessReportController;
+use App\Http\Controllers\API\FaqCategoryController;
+use App\Http\Controllers\API\FaqController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +48,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('hrvs', [HrvController::class, 'store'])->name('api.hrvs.store');
 
     Route::get('home', [HrvController::class, 'home'])->name('api.hrvs.home');
+
+    Route::prefix('faq-categories')->group(function () {
+        Route::post('/', [FaqCategoryController::class, 'store']);      
+        Route::get('/', [FaqCategoryController::class, 'index']);       
+        Route::put('{id}', [FaqCategoryController::class, 'update']);   
+        Route::delete('{id}', [FaqCategoryController::class, 'destroy']);
+    });
+
+
 });
 
 Route::post('/mindfulness/reports', [MindfulnessReportController::class, 'storeReports']);
@@ -54,3 +65,17 @@ Route::post('/mindfulness/reports/fetch', [MindfulnessReportController::class, '
 Route::post('hr', [HrController::class, 'store'])->name('api.hr.store');
 Route::post('hr/fetch', [HrController::class, 'fetchByTimestamp'])->name('api.hr.fetch');
 Route::post('readiness/calculate', [ReadinessScoreController::class, 'calculate'])->name('api.readiness.calculate');
+
+// FAQ
+Route::prefix('faqs')->group(function () {
+    // Public APIs (no auth / no role check)
+    Route::get('/', [FaqController::class, 'index']); // Get list
+    Route::get('{id}', [FaqController::class, 'show'])->whereNumber('id'); // Get detail
+
+    // Protected APIs (admin only)
+    Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+        Route::post('/', [FaqController::class, 'store']); // Create
+        Route::patch('{id}', [FaqController::class, 'update'])->whereNumber('id'); // Update
+        Route::delete('{id}', [FaqController::class, 'destroy'])->whereNumber('id'); // Delete
+    });
+});
