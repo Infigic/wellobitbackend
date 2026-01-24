@@ -74,6 +74,14 @@
                     </a>
                 </li>
                 <li class="nav-item menu-items">
+                    <a class="nav-link" href="{{ route('faqs.index') }}">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-help-circle text-warning"></i>
+                        </span>
+                        <span class="menu-title">{{ __('FAQs') }}</span>
+                    </a>
+                </li>
+                <li class="nav-item menu-items">
                     <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false"
                         aria-controls="ui-basic">
                         <span class="menu-icon">
@@ -117,7 +125,8 @@
             <nav class="navbar p-0 fixed-top d-flex flex-row">
                 <div class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center">
                     <a class="navbar-brand brand-logo-mini text-white" href="{{ route('home') }}">
-                        <img src="{{ Storage::url('/images/aayoo-mini.svg') }}" class="w-100 h-100" alt="logo" />
+                        <img src="{{ Storage::url('/images/aayoo-mini.svg') }}" class="w-100 h-100"
+                            alt="logo" />
                         {{-- {{ config('app.name', 'Aayoo') }} --}}
                     </a>
                 </div>

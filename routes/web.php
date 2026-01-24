@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HrvController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FaqController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -55,4 +56,16 @@ Route::middleware(['auth'])->group(function () {
 
     // HRV Routes
     Route::get('hrvs', [HrvController::class, 'index'])->name('hrvs.index');
+
+    // Route for FAQs
+    Route::prefix('faqs')->group(function () {
+        Route::get('/', [FaqController::class, 'index'])->name('faqs.index');
+        Route::get('/create', [FaqController::class, 'create'])->name('faqs.create');
+        Route::get('/{faq}/edit', [FaqController::class, 'edit'])->name('faqs.edit');
+        Route::put('/{faq}', [FaqController::class, 'update'])->name('faqs.update');
+        Route::delete('/{faq}', [FaqController::class, 'destroy'])->name('faqs.destroy');
+        Route::post('/', [FaqController::class, 'store'])->name('faqs.store');  
+    });
+    
 });
+
