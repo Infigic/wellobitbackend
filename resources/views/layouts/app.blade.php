@@ -79,6 +79,11 @@
                             <i class="mdi mdi-help-circle text-warning"></i>
                         </span>
                         <span class="menu-title">{{ __('FAQs') }}</span>
+                    <a class="nav-link" href="{{ route('faq-categories.index') }}">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-folder-text text-warning"></i>
+                        </span>
+                        <span class="menu-title">FAQ Categories</span>
                     </a>
                 </li>
                 <li class="nav-item menu-items">

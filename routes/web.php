@@ -6,6 +6,7 @@ use App\Http\Controllers\HrvController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\FaqCategoryController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -67,5 +68,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [FaqController::class, 'store'])->name('faqs.store');  
     });
     
+    // FAQ Category Routes
+    Route::resource('faq-categories', FaqCategoryController::class);
+
 });
 
