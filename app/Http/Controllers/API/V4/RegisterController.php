@@ -44,32 +44,93 @@ class RegisterController extends BaseController
       }
 
       $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users,email',
-        'password' => 'required|string|min:6|confirmed',
+            'name' => 'required|string|max:255',
+            /*
+            * IMPORTANT:
+            * Do NOT use `unique:users,email` here.
+            *
+            * Reason:
+            * - A user may have already registered but NOT completed OTP verification yet.
+            * - The same email can be submitted again to:
+            *   + verify OTP
+            *   + resend OTP
+            *   + continue an unfinished registration process
+            *
+            * Email uniqueness MUST be handled in business logic,
+            * not in validation rules.
+            */
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string|min:6|confirmed',
       ]);
 
       if ($validator->fails()) {
         return $this->sendError('Validation Error.', $validator->errors(), 422);
       }
 
-      $otp = rand(1001, 9998);
-      $expiresAt = Carbon::now()->addMinutes(60);
+      // Block if the email is already registered and verified
+      if ($user && $user->email_verified_at) {
+          return $this->sendError(
+              'Email already used.',
+              ['error' => 'This email is already registered and verified.'],
+              422
+          );
+      }
 
-      $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'otp' => $otp,
-        'otp_expires_at' => $expiresAt,
-        'is_active' => false,
-        'role' => 'customer',
-        'platform' => 'simple',
-      ]);
+      // Ensure user exists
+      if (!$user) {
+          /*
+          * FIRST-TIME REGISTRATION
+          */
+          $user = User::create([
+              'name' => $request->name,
+              'email' => $request->email,
+              'password' => Hash::make($request->password),
+              'is_active' => false,
+              'role' => 'customer',
+              'platform' => 'simple'
+          ]);
+          $otp = rand(1001, 9998);
+          $expiresAt = Carbon::now()->addMinutes(60);
 
-      $this->sendOtpEmail($user->email, $otp, $user->name);
+          $user->update([
+              'otp' => $otp,
+              'otp_expires_at' => $expiresAt,
+          ]);
 
-      return $this->sendResponse([], 'Registered successfully. Please verify your email with the OTP sent.');
+          $this->sendOtpEmail($user->email, $otp, $user->name);
+
+          return $this->sendResponse([
+              'state' => 'OTP_PENDING',
+              'email' => $user->email,
+          ], 'Registered successfully. Please verify your email with the OTP sent.');
+      }
+
+      // RE-REGISTRATION (OTP PENDING)
+      if ($user && is_null($user->email_verified_at)) {
+
+          if (
+              !$user->otp ||
+              !$user->otp_expires_at ||
+              Carbon::now()->gt($user->otp_expires_at)
+          ) {
+              $otp = rand(1001, 9998);
+              $expiresAt = Carbon::now()->addMinutes(60);
+
+              $user->update([
+                  'otp' => $otp,
+                  'otp_expires_at' => $expiresAt,
+              ]);
+              $this->sendOtpEmail($user->email, $otp, $user->name);
+          }
+
+          return $this->sendResponse([
+              'state' => 'OTP_PENDING',
+              'email' => $user->email
+          ],
+          'This email address has already been registered. Please check your inbox for a verification code and enter it to complete your registration.'
+          );
+      }
+      
     }
 
     // ----------------------------
@@ -176,58 +237,92 @@ class RegisterController extends BaseController
    */
   public function login(Request $request)
   {
-    // 1. Validate Input
-    $validator = Validator::make($request->all(), [
-      'email' => 'required|string|email',
-      'password' => 'required|string',
-    ]);
+      // 1. Validate input
+      $validator = Validator::make($request->all(), [
+          'email'    => 'required|string|email',
+          'password' => 'required|string',
+      ]);
 
-    if ($validator->fails()) {
-      return $this->sendError('Validation Error.', $validator->errors(), 422);
-    }
+      if ($validator->fails()) {
+          return $this->sendError('Validation Error.', $validator->errors(), 422);
+      }
 
-    // 2. Attempt to fetch user manually to add custom checks
-    $user = User::where('email', $request->email)->first();
+      // 2. Fetch user
+      $user = User::where('email', $request->email)->first();
 
-    // 3. User existence check
-    if (!$user) {
-      return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials'], 401);
-    }
+      // 3. User not found
+      if (!$user) {
+          return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials'], 401);
+      }
 
-    if ($user->role !== 'customer') {
-      return $this->sendError('Unauthorised.', ['error' => 'Only customers can log in via API.']);
-    }
+      // 4. Role check
+      if ($user->role !== 'customer') {
+          return $this->sendError(
+              'Unauthorised.',
+              ['error' => 'Only customers can log in via API.'],
+              403
+          );
+      }
 
-    // 4. Password match check
-    if (!Hash::check($request->password, $user->password)) {
-      return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials'], 401);
-    }
+      // 5. Password check
+      if (!Hash::check($request->password, $user->password)) {
+          return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials'], 401);
+      }
 
-    // 5. Soft-deleted check
-    if ($user->trashed()) {
-      return $this->sendError('Unauthorised.', ['error' => 'This account has been deactivated.'], 403);
-    }
+      // 6. Soft delete check
+      if ($user->trashed()) {
+          return $this->sendError(
+              'Unauthorised.',
+              ['error' => 'This account has been deactivated.'],
+              403
+          );
+      }
 
-    // 6. Email verification check
-    if (is_null($user->email_verified_at)) {
-      return $this->sendError('Unauthorised.', ['error' => 'Please verify your email.'], 403);
-    }
+      /**
+       * 7. Email not verified → OTP_PENDING flow
+       */
+      if (is_null($user->email_verified_at)) {
 
-    // 7. Active status check
-    if (!$user->is_active) {
-      return $this->sendError('Unauthorised.', ['error' => 'Account is not active.'], 403);
-    }
+          // Generate new OTP if expired or missing
+          if (
+              !$user->otp ||
+              !$user->otp_expires_at ||
+              now()->gte($user->otp_expires_at)
+          ) {
+              $otp = rand(1001, 9998);
 
-    // 8. Create token & respond
-    $token = $user->createToken('Aayoo')->plainTextToken;
+              $user->update([
+                  'otp'            => $otp,
+                  'otp_expires_at' => now()->addMinutes(10),
+              ]);
 
-    $data = [
-      'token' => $token,
-      'name' => $user->name,
-      'email' => $user->email,
-    ];
+              // Send OTP email here
+              $this->sendOtpEmail($user->email, $otp, $user->name);
+          }
 
-    return $this->sendResponse($data, 'User logged in successfully.');
+          return $this->sendResponse([
+              'state' => 'OTP_PENDING',
+              'email' => $user->email,
+          ], 'Email is not verified. OTP has been sent.');
+      }
+
+      // 8. Active status check
+      if (!$user->is_active) {
+          return $this->sendError(
+              'Unauthorised.',
+              ['error' => 'Account is not active.'],
+              403
+          );
+      }
+
+      // 9. Login success → issue token
+      $token = $user->createToken('Aayoo')->plainTextToken;
+
+      return $this->sendResponse([
+          'token' => $token,
+          'name'  => $user->name,
+          'email' => $user->email,
+      ], 'User logged in successfully.');
   }
 
   public function logout(Request $request)
