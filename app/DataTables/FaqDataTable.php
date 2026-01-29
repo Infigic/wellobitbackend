@@ -10,6 +10,7 @@ use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
+use Illuminate\Support\Str;
 
 class FaqDataTable extends DataTable
 {
@@ -21,28 +22,55 @@ class FaqDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+
             ->addColumn('action', function ($query) {
                 return '<div class="d-flex gap-3 justify-content-center">
-                    
                     <a href="' . route("faqs.edit", ["faq" => $query->id]) . '"
-                       class="btn btn-sm btn-info"><i class="mdi mdi-pencil"></i></a>
+                    class="btn btn-sm btn-info"><i class="mdi mdi-pencil"></i></a>
+
                     <a href=""
-                       onclick="event.preventDefault(); document.getElementById(\'delete-form-' . $query->id . '\').submit()"
-                       class="btn btn-sm btn-danger"><i class="mdi mdi-delete"></i></a>
+                    onclick="event.preventDefault(); document.getElementById(\'delete-form-' . $query->id . '\').submit()"
+                    class="btn btn-sm btn-danger"><i class="mdi mdi-delete"></i></a>
+
                     <form id="delete-form-' . $query->id . '"
-                          action="' . route("faqs.destroy", ["faq" => $query->id]) . '"
-                          method="POST" style="display: none;">
+                        action="' . route("faqs.destroy", ["faq" => $query->id]) . '"
+                        method="POST" style="display:none;">
                         ' . csrf_field() . '
                         ' . method_field('DELETE') . '
                     </form>
+                </div>';
+            })
+            ->editColumn('title', function ($row) {
+                $full  = e($row->title);
+                $short = Str::limit($full, 40);
+
+                return '
+                    <div class="text-truncate" style="max-width:200px" title="'.$full.'">
+                        '.$short.'
                     </div>
                 ';
             })
+
+            ->editColumn('subtitle', function ($row) {
+                $full  = e($row->subtitle);
+                $short = Str::limit($full, 60);
+
+                return '
+                    <div class="text-truncate" style="max-width:300px" title="'.$full.'">
+                        '.$short.'
+                    </div>
+                ';
+            })
+
             ->editColumn('category_id', function ($query) {
                 return $query->category ? $query->category->name : '-';
             })
+
+            ->rawColumns(['title', 'subtitle', 'action'])
+
             ->setRowId('id');
     }
+
 
     /**
      * Get the query source of dataTable.
