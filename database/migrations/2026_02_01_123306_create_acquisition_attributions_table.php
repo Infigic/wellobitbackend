@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('acquisition_attributions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
+            $table->foreignId('user_tracking_id')->constrained('user_trackings');
             $table->string('acquisition_channel')->nullable();
             $table->string('acquisition_source')->nullable();
-            $table->string('campaign_name')->nullable(); 
+            $table->string('campaign_name')->nullable();
             $table->timestamps();
         });
     }
