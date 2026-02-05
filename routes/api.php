@@ -12,7 +12,6 @@ use App\Http\Controllers\API\FaqCategoryController;
 use App\Http\Controllers\API\FaqController;
 use App\Http\Controllers\API\EventController;
 
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -91,3 +90,6 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/events/public', [EventController::class, 'store']);
 
 
+// User Tracking
+Route::post('events', [EventController::class, 'track'])
+    ->middleware('auth:sanctum');

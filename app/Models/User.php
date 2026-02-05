@@ -87,4 +87,10 @@ class User extends Authenticatable
             ? asset('storage/' . $this->profile_image)
             : null;
     }
+
+    public function tracking()
+    {
+        return $this->hasOne(UserTracking::class);
+    }
+
 }
