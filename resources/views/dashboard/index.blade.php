@@ -139,64 +139,72 @@
                 <div class="filters-grid">
                     <div class="filter-group">
                         <label class="filter-label">Acquisition Channel</label>
-                        <select onchange="applyFilters()">
-                            <option>All Channels</option>
-                            <option>Organic</option>
-                            <option>Paid</option>
-                            <option>Referral</option>
-                            <option>Social</option>
-                            <option>Unknown</option>
+                        <select name="acquisition_channel" onchange="applyFilters()">
+                            <option value="">All Channels</option>
+
+                            @foreach ($acquisitionChannels as $value => $label)
+                                <option value="{{ $value }}">
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Subscription Status</label>
                         <select onchange="applyFilters()">
-                            <option>All Status</option>
-                            <option>Free</option>
-                            <option>Trial</option>
-                            <option>Paid</option>
-                            <option>Cancelled</option>
-                            <option>Expired</option>
+                            <option value="">All Status</option>
+
+                            @foreach ($subscriptionStatuses as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Onboarding Stage</label>
-                        <select onchange="applyFilters()">
-                            <option>All Stages</option>
-                            <option>Registered</option>
-                            <option>Watch Pending</option>
-                            <option>First Session Done</option>
-                            <option>Completed</option>
+                        <select name="onboarding_stage" onchange="applyFilters()">
+                            <option value="">All Stages</option>
+
+                            @foreach ($onboardingStages as $key => $label)
+                                <option value="{{ $key }}">
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Apple Watch</label>
-                        <select onchange="applyFilters()">
-                            <option>All</option>
-                            <option>Connected</option>
-                            <option>Not Connected</option>
+                        <select name="apple_watch" onchange="applyFilters()">
+                            <option value="">All</option>
+
+                            @foreach ($appleWatchStatuses as $key => $label)
+                                <option value="{{ $key }}">
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Activity Status</label>
-                        <select onchange="applyFilters()">
-                            <option>All Users</option>
-                            <option>Active Today</option>
-                            <option>Active 7d</option>
-                            <option>Inactive 7d+</option>
-                            <option>Inactive 30d+</option>
+                        <select name="activity_status" onchange="applyFilters()">
+                            <option value="">All Users</option>
+
+                            @foreach ($activityStatuses as $key => $label)
+                                <option value="{{ $key }}">
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Primary Reason</label>
-                        <select onchange="applyFilters()">
-                            <option>All Reasons</option>
-                            <option>Stress & anxiety</option>
-                            <option>Sleep</option>
-                            <option>Breathwork / relaxation</option>
-                            <option>Heart health / HRV</option>
-                            <option>Focus & performance</option>
-                            <option>Curiosity / exploring</option>
+                        <select name="primary_reason" onchange="applyFilters()">
+                            <option value="">All Reasons</option>
+
+                            @foreach ($primaryReasons as $key => $label)
+                                <option value="{{ $key }}">
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                 </div>

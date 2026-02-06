@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 
 class Subscription extends Model
 {
@@ -31,5 +32,26 @@ class Subscription extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Computed subscription status
+     * free | trial | paid | expired
+     */
+    public function getStatusAttribute(): string
+    {
+        $now = Carbon::now();
+
+        if ($this->paid_started_at) {
+            return 'paid';
+        }
+
+        if ($this->trial_started_at && $this->trial_ends_at) {
+            return $this->trial_ends_at->gte($now)
+                ? 'trial'
+                : 'expired';
+        }
+
+        return 'free';
     }
 }

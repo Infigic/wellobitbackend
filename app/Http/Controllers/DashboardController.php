@@ -15,44 +15,80 @@ class DashboardController extends Controller
      */
     public function index(DashboardDataTable $dataTable)
     {
-        // Count queries
+        // ===== Counters =====
         $totalUserTrackings = UserTracking::count();
-        $activatedUsers = UserTracking::activated()->count();
-        $totalTrialUsers = UserTracking::whereNotNull('trial_started_at')->count();
-        $usersThisWeek = UserTracking::thisWeek()->count();
-        $activeToday = UserTracking::activateToday()->count();
-        $trialUsers = UserTracking::trial()->count();
-        $paidUsers = UserTracking::paid()->count();
-        $convertedUsers = UserTracking::convertedToPaid()->count();
-        $expiredTrialUsersButActive = UserTracking::trialExpiredButActive()->where('last_active_at', '>=', now()->subDays(config('dashboard.day.ending_soon')))->count();
-        $trialEndingSoon = UserTracking::expiredTriallsSoon(config('dashboard.day.ending_soon'))->count();
-        $inactive7Days = UserTracking::inActiveForDays(config('dashboard.day.at_risk'), config('dashboard.day.high_at_risk'))->count();
-        $inactive30Days = UserTracking::inActiveForDays(config('dashboard.day.high_at_risk'))->count();
+        $activatedUsers     = UserTracking::activated()->count();
+        $usersThisWeek      = UserTracking::thisWeek()->count();
+        $activeToday        = UserTracking::activateToday()->count();
+
+        $trialUsers         = UserTracking::trial()->count();
+        $paidUsers          = UserTracking::paid()->count();
+        $convertedUsers     = UserTracking::convertedToPaid()->count();
+
+        $expiredTrialUsersButActive = UserTracking::trialExpiredButActive()
+            ->where('last_active_at', '>=', now()->subDays(config('dashboard.day.ending_soon')))
+            ->count();
+
+        $trialEndingSoon = UserTracking::expiredTriallsSoon(
+            config('dashboard.day.ending_soon')
+        )->count();
+
+        $inactive7Days = UserTracking::inActiveForDays(
+            config('dashboard.day.at_risk'),
+            config('dashboard.day.high_at_risk')
+        )->count();
+
+        $inactive30Days = UserTracking::inActiveForDays(
+            config('dashboard.day.high_at_risk')
+        )->count();
+
         $inCompleteSetup = UserTracking::incompletedSetup()->count();
 
+        // ===== Rates =====
         $activationRate = $totalUserTrackings > 0
             ? round(($activatedUsers / $totalUserTrackings) * 100, 2)
             : 0;
+
         $noFirstSessionUsers = $totalUserTrackings - $activatedUsers;
 
+        // ===== Totals for dashboard =====
         $totals = [
-            'total_users_trackings' => $totalUserTrackings,
-            'users_this_week' => $usersThisWeek,
-            'total_activated_users' => $activatedUsers,
-            'activation_rate' => $activationRate,
-            'active_today' => $activeToday,
-            'total_trial_users' => $trialUsers,
-            'total_paid_users' => $paidUsers,
-            'trial_to_paid_conversion_rate' => $convertedUsers,
-            'no_first_session_users' => $noFirstSessionUsers,
-            'expired_trial_users' => $expiredTrialUsersButActive,
-            'trial_ending_soon' => $trialEndingSoon,
-            'inactive_7_days' => $inactive7Days,
-            'inactive_30_days' => $inactive30Days,
-            'incomplete_setup_users' => $inCompleteSetup,
+            'total_users_trackings'        => $totalUserTrackings,
+            'users_this_week'              => $usersThisWeek,
+            'total_activated_users'        => $activatedUsers,
+            'activation_rate'              => $activationRate,
+            'active_today'                 => $activeToday,
+            'total_trial_users'            => $trialUsers,
+            'total_paid_users'             => $paidUsers,
+            'trial_to_paid_conversion_rate'=> $convertedUsers,
+            'no_first_session_users'       => $noFirstSessionUsers,
+            'expired_trial_users'          => $expiredTrialUsersButActive,
+            'trial_ending_soon'            => $trialEndingSoon,
+            'inactive_7_days'              => $inactive7Days,
+            'inactive_30_days'             => $inactive30Days,
+            'incomplete_setup_users'       => $inCompleteSetup,
         ];
 
-        return $dataTable->render('dashboard.index', compact('totals'));
+        // ===== Filters (display only, no logic yet) =====
+        $acquisitionChannels  = config('acquisition.channels');
+        $subscriptionStatuses = config('subscription.statuses', []);
+        $onboardingStages     = config('onboarding.stages', []);
+        $appleWatchStatuses = config('apple_watch.statuses');
+        $activityStatuses = config('activity.statuses');
+        $primaryReasons = config('primary_reason.reasons');
+
+        return $dataTable->render(
+            'dashboard.index',
+            compact(
+                'totals',
+                'acquisitionChannels',
+                'subscriptionStatuses',
+                'onboardingStages',
+                'appleWatchStatuses',
+                'activityStatuses',
+                'primaryReasons'
+            )
+        );
     }
 
     /**
