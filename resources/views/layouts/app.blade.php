@@ -57,6 +57,14 @@
                         <span class="menu-title">{{ __('Users') }}</span>
                     </a>
                 </li>
+                 <li class="nav-item menu-items">
+                    <a class="nav-link" href="{{ route('dashboard.index') }}">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-account-group"></i>
+                        </span>
+                        <span class="menu-title">{{ __('Users Tracking') }}</span>
+                    </a>
+                </li>
                 <li class="nav-item menu-items">
                     <a class="nav-link" href="{{ route('quotes.index') }}">
                         <span class="menu-icon">

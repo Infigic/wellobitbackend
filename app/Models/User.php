@@ -93,4 +93,9 @@ class User extends Authenticatable
         return $this->hasOne(UserTracking::class);
     }
 
+    public function sessions()
+    {
+        return $this->hasMany(BreathSession::class, 'user_id');
+    }
+
 }
