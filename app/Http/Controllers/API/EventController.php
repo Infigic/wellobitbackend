@@ -54,8 +54,6 @@ class EventController extends BaseController
                 'app_installed'          => $this->handleAppInstalled($request),
                 'user_registered'        => $this->handleUserRegistered($request),
                 'acquisition_info'       => $this->handleAttributionInfo($request),
-                'apple_watch_connected'  => $this->handleAppleWatchConnected($request),
-                'health_connected'       => $this->handleHealthConnected($request),
                 default                 => throw new \Exception('Unknown event name.')
             };
 
@@ -145,7 +143,7 @@ class EventController extends BaseController
         }
 
         if (isset($result['device']['error']) && isset($result['tracking']['error'])) {
-            throw new \Exception('Both device and tracking updates failed.');
+            throw new \Exception('There are no data has change.');
         }
 
         return $result;
@@ -160,183 +158,195 @@ class EventController extends BaseController
 
         $tracking = $this->trackingService->handleHealthConnected($validated);
 
-        return [
-            'tracking' => $tracking,
-        ];
+        return $this->sendResponse($tracking->apple_health_connected, 'Health connected event processed successfully.');
     }
 
     public function track(Request $request)
     {
         $event = $request->input('event');
 
-        switch ($event) {
+        try {
+            switch ($event) {
 
-            /**
-             * EVENT 4 – PRIMARY REASON
-             */
-            case 'primary_reason_selected':
+                /**
+                 * EVENT 4 – PRIMARY REASON
+                 */
+                case 'primary_reason_selected':
 
-                $validated = $request->validate([
-                    'primary_reason_to_use' =>
+                    $validated = $request->validate([
+                        'primary_reason_to_use' =>
                         'nullable|string|in:stress,sleep,breathwork,hrv,focus,curiosity'
-                ]);
+                    ]);
 
-                $userId = auth()->id();
+                    $userId = auth()->id();
 
-                if (!$userId) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Unauthenticated.'
-                    ], 401);
-                }
+                    if (!$userId) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Unauthenticated.'
+                        ], 401);
+                    }
 
-                Log::info('TRACK EVENT: primary_reason_selected', [
-                    'user_id' => $userId,
-                    'payload' => $request->all()
-                ]);
+                    Log::info('TRACK EVENT: primary_reason_selected', [
+                        'user_id' => $userId,
+                        'payload' => $request->all()
+                    ]);
 
-                return response()->json(
-                    $this->trackingService->handlePrimaryReasonSelected(
-                        $userId,
-                        $validated['primary_reason_to_use'] ?? null
-                    )
-                );
-
-            /**
-             * EVENT 6 – BREATH SESSION
-             */
-            case 'first_breath_session_completed':
-            case 'breath_session_completed':
-
-                if (!$request->user()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Unauthenticated.'
-                    ], 401);
-                }
-
-                Log::info('TRACK EVENT: breath session', [
-                    'event'   => $event,
-                    'user_id' => $request->user()->id,
-                    'payload' => $request->all()
-                ]);
-
-                try {
-                    $result = $this->breathSessionService->handle(
-                        $request->user(),
-                        $request->all()
+                    return response()->json(
+                        $this->trackingService->handlePrimaryReasonSelected(
+                            $userId,
+                            $validated['primary_reason_to_use'] ?? null
+                        )
                     );
-                } catch (InvalidArgumentException $e) {
+
+                /**
+                 * EVENT 6 – BREATH SESSION
+                 */
+                case 'first_breath_session_completed':
+                case 'breath_session_completed':
+
+                    if (!$request->user()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Unauthenticated.'
+                        ], 401);
+                    }
+
+                    Log::info('TRACK EVENT: breath session', [
+                        'event'   => $event,
+                        'user_id' => $request->user()->id,
+                        'payload' => $request->all()
+                    ]);
+
+                    try {
+                        $result = $this->breathSessionService->handle(
+                            $request->user(),
+                            $request->all()
+                        );
+                    } catch (InvalidArgumentException $e) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => $e->getMessage(),
+                        ], 422);
+                    }
+
+                    $message = match ($result['status'] ?? null) {
+                        'created'        => 'First breath session recorded',
+                        'already_exists' => 'First breath session already recorded',
+                        'recorded'       => 'Breath session recorded',
+                        default          => 'Event processed',
+                    };
+
+                    return response()->json([
+                        'success' => true,
+                        'message' => $message,
+                        'data'    => isset($result['first_session_at'])
+                            ? ['first_session_at' => $result['first_session_at']]
+                            : null,
+                    ]);
+
+                /**
+                 * EVENT 7 – APP ACTIVE
+                 */
+                case 'app_active':
+
+                    if (!$request->user()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Unauthenticated.'
+                        ], 401);
+                    }
+
+                    $validated = $request->validate([
+                        'last_active_at' => 'required|date'
+                    ]);
+
+                    Log::info('TRACK EVENT: app_active', [
+                        'user_id' => $request->user()->id,
+                        'payload' => $validated
+                    ]);
+
+                    $result = $this->trackingService->handleAppActive(
+                        $request->user()->id,
+                        $validated['last_active_at']
+                    );
+
+                    return response()->json($result);
+                /**
+                 * EVENT 8 – TRIAL & SUBSCRIPTION
+                 */
+                case 'trial_started':
+
+                    if (!$request->user()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Unauthenticated.'
+                        ], 401);
+                    }
+
+                    $validated = $request->validate([
+                        'trial_started_at' => 'required|date',
+                        'trial_ends_at'    => 'required|date|after:trial_started_at',
+                        'plan_name'        => 'required|string',
+                    ]);
+
+                    Log::info('TRACK EVENT: trial_started', [
+                        'user_id' => $request->user()->id,
+                        'payload' => $validated
+                    ]);
+
+                    $result = $this->subscriptionService->handleTrialStarted(
+                        $request->user()->id,
+                        $validated
+                    );
+
+                    return response()->json($result);
+
+
+                case 'subscription_started':
+
+                    if (!$request->user()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Unauthenticated.'
+                        ], 401);
+                    }
+
+                    $validated = $request->validate([
+                        'paid_started_at' => 'required|date',
+                        'plan_name'       => 'required|string',
+                    ]);
+
+                    Log::info('TRACK EVENT: subscription_started', [
+                        'user_id' => $request->user()->id,
+                        'payload' => $validated
+                    ]);
+
+                    $result = $this->subscriptionService->handleSubscriptionStarted(
+                        $request->user()->id,
+                        $validated
+                    );
+
+                    return response()->json($result);
+
+                case 'apple_watch_connected':
+                    return $this->handleAppleWatchConnected($request);
+
+                case 'health_connected':
+                    return $this->handleHealthConnected($request);
+
+                default:
                     return response()->json([
                         'success' => false,
-                        'message' => $e->getMessage(),
-                    ], 422);
-                }
-
-                $message = match ($result['status'] ?? null) {
-                    'created'        => 'First breath session recorded',
-                    'already_exists' => 'First breath session already recorded',
-                    'recorded'       => 'Breath session recorded',
-                    default          => 'Event processed',
-                };
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $message,
-                    'data'    => isset($result['first_session_at'])
-                        ? ['first_session_at' => $result['first_session_at']]
-                        : null,
-                ]);
-
-            /**
-             * EVENT 7 – APP ACTIVE
-             */
-            case 'app_active':
-
-                if (!$request->user()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Unauthenticated.'
-                    ], 401);
-                }
-
-                $validated = $request->validate([
-                    'last_active_at' => 'required|date'
-                ]);
-
-                Log::info('TRACK EVENT: app_active', [
-                    'user_id' => $request->user()->id,
-                    'payload' => $validated
-                ]);
-
-                $result = $this->trackingService->handleAppActive(
-                    $request->user()->id,
-                    $validated['last_active_at']
-                );
-
-                return response()->json($result);
-            /**
-             * EVENT 8 – TRIAL & SUBSCRIPTION
-             */
-            case 'trial_started':
-
-            if (!$request->user()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthenticated.'
-                ], 401);
+                        'message' => 'Unknown event type.'
+                    ], 400);
             }
-
-            $validated = $request->validate([
-                'trial_started_at' => 'required|date',
-                'trial_ends_at'    => 'required|date|after:trial_started_at',
-                'plan_name'        => 'required|string',
-            ]);
-
-            Log::info('TRACK EVENT: trial_started', [
-                'user_id' => $request->user()->id,
-                'payload' => $validated
-            ]);
-
-            $result = $this->subscriptionService->handleTrialStarted(
-                $request->user()->id,
-                $validated
-            );
-
-            return response()->json($result);
-
-
-            case 'subscription_started':
-
-                if (!$request->user()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Unauthenticated.'
-                    ], 401);
-                }
-
-                $validated = $request->validate([
-                    'paid_started_at' => 'required|date',
-                    'plan_name'       => 'required|string',
-                ]);
-
-                Log::info('TRACK EVENT: subscription_started', [
-                    'user_id' => $request->user()->id,
-                    'payload' => $validated
-                ]);
-
-                $result = $this->subscriptionService->handleSubscriptionStarted(
-                    $request->user()->id,
-                    $validated
-                );
-
-                return response()->json($result);
-
-            default:
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unknown event type.'
-                ], 400);
+        } catch (ValidationException $e) {
+            return $this->sendError('Validation failed', $e->errors(), 422);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return $this->sendError('Database error: ' . $e->getMessage(), [], 500);
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), [], 400);
         }
     }
 }

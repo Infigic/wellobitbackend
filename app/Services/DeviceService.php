@@ -60,10 +60,6 @@ class DeviceService
         // Collect only changed fields
         $updates = [];
 
-        if (isset($data['has_apple_watch']) && $userDevice->has_apple_watch != $data['has_apple_watch']) {
-            $updates['has_apple_watch'] = $data['has_apple_watch'];
-        }
-
         if (isset($data['apple_watch_model']) && $userDevice->apple_watch_model != $data['apple_watch_model']) {
             $updates['apple_watch_model'] = $data['apple_watch_model'];
         }

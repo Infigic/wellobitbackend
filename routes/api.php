@@ -82,13 +82,8 @@ Route::prefix('faqs')->group(function () {
     });
 });
 
-// Handle Events
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/events/private', [EventController::class, 'store']);
-});
-
+// Public Event Tracking
 Route::post('/events/public', [EventController::class, 'store']);
-
 
 // User Tracking
 Route::post('events', [EventController::class, 'track'])
