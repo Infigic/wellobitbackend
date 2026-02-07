@@ -69,7 +69,7 @@ class DashboardController extends Controller
             'incomplete_setup_users'       => $inCompleteSetup,
         ];
 
-        // ===== Filters (display only, no logic yet) =====
+        // ===== Filters =====
         $acquisitionChannels  = config('acquisition.channels');
         $subscriptionStatuses = config('subscription.statuses', []);
         $onboardingStages     = config('onboarding.stages', []);

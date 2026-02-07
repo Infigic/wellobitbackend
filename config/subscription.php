@@ -6,6 +6,5 @@ return [
         'trial'     => 'Trial',
         'paid'      => 'Paid',
         'expired'   => 'Expired',
-        'cancelled' => 'Cancelled',
     ],
 ];

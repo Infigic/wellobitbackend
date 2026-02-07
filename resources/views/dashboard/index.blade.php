@@ -139,11 +139,12 @@
                 <div class="filters-grid">
                     <div class="filter-group">
                         <label class="filter-label">Acquisition Channel</label>
-                        <select name="acquisition_channel" onchange="applyFilters()">
+                        <select name="acquisition_channel" class="dashboard-filter" onchange="applyFilters()">
                             <option value="">All Channels</option>
 
                             @foreach ($acquisitionChannels as $value => $label)
-                                <option value="{{ $value }}">
+                                <option value="{{ $value }}"
+                                    {{ request('acquisition_channel') === $value ? 'selected' : '' }}>
                                     {{ $label }}
                                 </option>
                             @endforeach
@@ -151,21 +152,28 @@
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Subscription Status</label>
-                        <select onchange="applyFilters()">
+                        <select name="subscription_status" class="dashboard-filter" onchange="applyFilters()">
                             <option value="">All Status</option>
 
                             @foreach ($subscriptionStatuses as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
+                                <option value="{{ $value }}"
+                                    {{ request('subscription_status') === $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Onboarding Stage</label>
-                        <select name="onboarding_stage" onchange="applyFilters()">
+
+                        <select name="onboarding_stage"
+                                class="dashboard-filter"
+                                onchange="applyFilters()">
                             <option value="">All Stages</option>
 
                             @foreach ($onboardingStages as $key => $label)
-                                <option value="{{ $key }}">
+                                <option value="{{ $key }}"
+                                    {{ request('onboarding_stage') === $key ? 'selected' : '' }}>
                                     {{ $label }}
                                 </option>
                             @endforeach
@@ -173,11 +181,12 @@
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Apple Watch</label>
-                        <select name="apple_watch" onchange="applyFilters()">
+                        <select name="apple_watch" class="dashboard-filter" onchange="applyFilters()">
                             <option value="">All</option>
 
                             @foreach ($appleWatchStatuses as $key => $label)
-                                <option value="{{ $key }}">
+                                <option value="{{ $key }}"
+                                    {{ request('apple_watch') === $key ? 'selected' : '' }}>
                                     {{ $label }}
                                 </option>
                             @endforeach
@@ -185,11 +194,12 @@
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Activity Status</label>
-                        <select name="activity_status" onchange="applyFilters()">
+                        <select name="activity_status" class="dashboard-filter" onchange="applyFilters()">
                             <option value="">All Users</option>
 
                             @foreach ($activityStatuses as $key => $label)
-                                <option value="{{ $key }}">
+                                <option value="{{ $key }}"
+                                    {{ request('activity_status') === $key ? 'selected' : '' }}>
                                     {{ $label }}
                                 </option>
                             @endforeach
@@ -197,11 +207,12 @@
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Primary Reason</label>
-                        <select name="primary_reason" onchange="applyFilters()">
+                        <select name="primary_reason" class="dashboard-filter" onchange="applyFilters()">
                             <option value="">All Reasons</option>
 
                             @foreach ($primaryReasons as $key => $label)
-                                <option value="{{ $key }}">
+                                <option value="{{ $key }}"
+                                    {{ request('primary_reason') === $key ? 'selected' : '' }}>
                                     {{ $label }}
                                 </option>
                             @endforeach
@@ -252,6 +263,16 @@
             exportAll(backendSegment);
         }
     </script>
+
+    <!-- Filter Scripts -->
+    <script>
+    function applyFilters() {
+        const table = $('#users-table').DataTable();
+
+        table.ajax.reload();
+    }
+    </script>
+
 </body>
 
 </html>
