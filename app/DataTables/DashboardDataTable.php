@@ -61,9 +61,14 @@ class DashboardDataTable extends DataTable
                 return '<span class="badge badge-red">Expired</span>';
             })
             ->editColumn('primary_reason_to_use', function ($userTracking) {
-                return $userTracking->primary_reason_to_use
-                    ? '<span class="badge badge-orange">' . e($userTracking->primary_reason_to_use) . '</span>'
-                    : '';
+                if (!$userTracking->primary_reason_to_use) {
+                    return '';
+                }
+                
+                $reasons = config('primary_reason.reasons');
+                $label = $reasons[$userTracking->primary_reason_to_use] ?? $userTracking->primary_reason_to_use;
+                
+                return '<span class="badge badge-orange">' . e($label) . '</span>';
             })
             ->addColumn('channel', function ($userTracking) {
                 if ($userTracking->acquisition && $userTracking->acquisition->acquisition_channel) {
