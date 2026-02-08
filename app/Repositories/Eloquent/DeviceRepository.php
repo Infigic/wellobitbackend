@@ -12,9 +12,9 @@ class DeviceRepository implements DeviceRepositoryInterface
         return UserDevice::create($data);
     }
 
-    public function findByAnonymousId(string $anonymousId)
+    public function findByUuid(string $uuid)
     {
-        return UserDevice::where('anonymous_id', $anonymousId)->first();
+        return UserDevice::where('uuid', $uuid)->first();
     }
 
     public function updateRegister(int $id, array $data)

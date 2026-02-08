@@ -90,7 +90,7 @@ class EventController extends BaseController
     private function handleUserRegistered(Request $request)
     {
         $device_id = $this->deviceService
-            ->getDeviceIdByAnonymousId($request->input('anonymous_id'));
+            ->getDeviceIdByUuid($request->input('uuid'));
 
         $request->merge(['device_id' => $device_id]);
 
@@ -146,7 +146,7 @@ class EventController extends BaseController
             throw new \Exception('There are no data has change.');
         }
 
-        return $result;
+        return $this->sendResponse($result, 'Apple Watch connected event processed successfully.');
     }
 
     private function handleHealthConnected(Request $request)

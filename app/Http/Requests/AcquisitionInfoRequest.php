@@ -15,7 +15,7 @@ class AcquisitionInfoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'anonymous_id' => 'required|string|exists:user_devices,anonymous_id|max:255',
+            'uuid' => 'required|string|exists:user_devices,uuid|max:255',
             'acquisition_channel' => ['nullable', Rule::in(config('event.acquisition_channel'))],
             'acquisition_source' => ['nullable', Rule::in(config('event.acquisition_source'))],
             'campaign_name' => 'nullable|string|max:255',

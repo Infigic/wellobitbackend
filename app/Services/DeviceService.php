@@ -18,7 +18,7 @@ class DeviceService
     public function handleAppInstalled(array $data)
     {
         return $this->deviceRepository->create([
-            'anonymous_id' => $data['anonymous_id'] ?? null,
+            'uuid' => $data['uuid'] ?? null,
             'timezone' => $data['timezone'] ?? null,
             'locale' => $data['locale'] ?? null,
             'app_version' => $data['app_version'] ?? null,
@@ -32,13 +32,13 @@ class DeviceService
     public function handleRegisteredUser(array $data)
     {
         $user = User::where('email', $data['email'])->first();
-        $device = $this->deviceRepository->findByAnonymousId($data['anonymous_id']);
+        $device = $this->deviceRepository->findByUuid($data['uuid']);
         if (!$user) {
             throw new \Exception('User not found with email: ' . $data['email']);
         }
 
         if (!$device) {
-            throw new \Exception('Device not found with anonymous_id: ' . $data['anonymous_id']);
+            throw new \Exception('Device not found with uuid: ' . $data['uuid']);
         }
 
         return $this->deviceRepository->updateRegister($device->id, [
@@ -57,7 +57,6 @@ class DeviceService
             throw new \Exception('User device not found for user_id: ' . $data['user_id']);
         }
 
-        // Collect only changed fields
         $updates = [];
 
         if (isset($data['apple_watch_model']) && $userDevice->apple_watch_model != $data['apple_watch_model']) {
@@ -75,11 +74,11 @@ class DeviceService
         return $this->deviceRepository->updateAppleWatchConnected($data['user_id'], $updates);
     }
 
-    public function getDeviceIdByAnonymousId(string $anonymous_id)
+    public function getDeviceIdByUuid(string $uuid)
     {
-        $device = $this->deviceRepository->findByAnonymousId($anonymous_id);
+        $device = $this->deviceRepository->findByUuid($uuid);
         if (!$device) {
-            throw new \Exception('Device not found with anonymous_id: ' . $anonymous_id);
+            throw new \Exception('Device not found with uuid: ' . $uuid);
         }
         return $device->id;
     }

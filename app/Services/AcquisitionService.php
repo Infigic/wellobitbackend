@@ -20,7 +20,7 @@ class AcquisitionService
      */
     public function handleAttributionInfo(array $data)
     {
-        $deviceId = $this->deviceService->getDeviceIdByAnonymousId($data['anonymous_id']);
+        $deviceId = $this->deviceService->getDeviceIdByUuid($data['uuid']);
         $user_tracking_id = UserTracking::where('device_id', $deviceId)->value('id');
         return $this->attributionRepository->create([
             'user_tracking_id' => $user_tracking_id,

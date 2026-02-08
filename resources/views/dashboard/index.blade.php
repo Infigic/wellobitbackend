@@ -239,7 +239,7 @@
 
     <script>
         function exportAll(segment = null) {
-            let url = '{{ route('dashboard.export') }}';
+            let url = '{{ route('dashboard.exportCSV') }}';
             if (segment) {
                 url += '?segment=' + segment;
             }

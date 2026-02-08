@@ -11,7 +11,7 @@ class UserDevice extends Model
 
     protected $fillable = [
         'user_id',
-        'anonymous_id',
+        'uuid',
         'timezone',
         'locale',
         'app_version',

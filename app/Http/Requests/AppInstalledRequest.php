@@ -14,7 +14,7 @@ class AppInstalledRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'anonymous_id' => 'required|uuid|unique:user_devices,anonymous_id|max:255',
+            'uuid' => 'required|uuid|unique:user_devices,uuid|max:255',
             'installed_at' => 'required|date',
             'timezone' => 'string',
             'locale' => 'string',

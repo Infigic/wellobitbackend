@@ -10,5 +10,5 @@ interface DeviceRepositoryInterface
 
     public function updateAppleWatchConnected(int $id, array $data);
 
-    public function findByAnonymousId(string $anonymousId);
+    public function findByUuid(string $uuid);
 }

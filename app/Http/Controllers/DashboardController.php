@@ -94,11 +94,10 @@ class DashboardController extends Controller
     /**
      * Export user tracking data to CSV.
      */
-    public function export(Request $request)
+    public function exportCSV(Request $request)
     {
         $segment = $request->query('segment');
 
-        // Build query based on segment
         $query = UserTracking::with(['device', 'user.sessions', 'acquisition']);
 
         switch ($segment) {
@@ -133,7 +132,6 @@ class DashboardController extends Controller
 
         $users = $query->get();
 
-        // Generate CSV
         $filename = 'user_tracking_' . ($segment ?? 'all') . '_' . date('Y-m-d_His') . '.csv';
 
         $headers = [
@@ -144,7 +142,6 @@ class DashboardController extends Controller
         $callback = function () use ($users) {
             $file = fopen('php://output', 'w');
 
-            // headers
             fputcsv($file, [
                 'USER',
                 'EMAIL',
@@ -160,9 +157,7 @@ class DashboardController extends Controller
                 'REASON',
             ]);
 
-            //  rows
             foreach ($users as $tracking) {
-                // Determine plan status
                 if ($tracking->is_paid) {
                     $plan = 'Paid';
                 } elseif ($tracking->trial_started_at && $tracking->trial_ends_at && $tracking->trial_ends_at > now()) {
@@ -171,14 +166,12 @@ class DashboardController extends Controller
                     $plan = 'Expired';
                 }
 
-                // Determine stage
                 if ($tracking->first_breath_session_at && $tracking->device && $tracking->device->apple_watch_model) {
                     $stage = 'Completed';
                 } else {
                     $stage = 'Registered';
                 }
 
-                // Watch model
                 $watchModel = $tracking->has_apple_watch && $tracking->device
                     ? $tracking->device->apple_watch_model ?? 'Connected'
                     : 'Not Connected';

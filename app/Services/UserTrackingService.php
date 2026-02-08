@@ -34,9 +34,9 @@ class UserTrackingService
      */
     public function handleAppInstalled(array $data)
     {
-        $device = $this->deviceRepository->findByAnonymousId($data['anonymous_id']);
+        $device = $this->deviceRepository->findByUuid($data['uuid']);
         if (!$device) {
-            throw new \Exception('Device not found for anonymous_id: ' . $data['anonymous_id']);
+            throw new \Exception('Device not found for uuid: ' . $data['uuid']);
         }
 
         return $this->trackingRepo->create([
@@ -56,14 +56,14 @@ class UserTrackingService
             throw new \Exception('User not found with email: ' . $data['email']);
         }
 
-        $device = $this->deviceRepository->findByAnonymousId($data['anonymous_id']);
+        $device = $this->deviceRepository->findByUuid($data['uuid']);
         if (!$device) {
-            throw new \Exception('Device not found with anonymous_id: ' . $data['anonymous_id']);
+            throw new \Exception('Device not found with uuid: ' . $data['uuid']);
         }
 
         $existingTracking = UserTracking::where('device_id', $device->id)->first();
         if ($existingTracking && $existingTracking->user_id !== null) {
-            throw new \Exception('This anonymous_id is already registered with another user.');
+            throw new \Exception('This uuid is already registered with another user.');
         }
 
         return $this->trackingRepo->updateRegister($device->id, [

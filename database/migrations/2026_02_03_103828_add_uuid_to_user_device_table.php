@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('user_devices', function (Blueprint $table) {
-            $table->uuid('anonymous_id')->after('user_id')->unique();
+            $table->uuid('uuid')->after('user_id')->unique();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('user_devices', function (Blueprint $table) {
-            $table->dropColumn('anonymous_id');
+            $table->dropColumn('uuid');
         });
     }
 };

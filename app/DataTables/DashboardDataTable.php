@@ -253,7 +253,7 @@ class DashboardDataTable extends DataTable
                     });
                 }'
             ])
-            ->dom('rtip')
+            ->dom("rt<'row mt-2 align-items-center'<'col-md-6'i><'col-md-6 d-flex justify-content-end'p>>")
             ->orderBy(0, 'desc')
             ->pageLength(10);
     }
