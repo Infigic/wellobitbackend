@@ -8,7 +8,6 @@ return [
         'inactive_30d'   => 'Inactive 30d+',
     ],
 
-    // For future filter logic
     'days' => [
         'active_7d'    => 7,
         'inactive_7d'  => 7,

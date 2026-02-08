@@ -85,6 +85,6 @@ Route::prefix('faqs')->group(function () {
 // Public Event Tracking
 Route::post('/events/public', [EventController::class, 'store']);
 
-// User Tracking
-Route::post('events', [EventController::class, 'track'])
+// Private Event Tracking
+Route::post('events', [EventController::class, 'recordUserEvent'])
     ->middleware('auth:sanctum');

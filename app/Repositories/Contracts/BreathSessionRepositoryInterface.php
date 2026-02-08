@@ -7,9 +7,6 @@ use Carbon\Carbon;
 
 interface BreathSessionRepositoryInterface
 {
-    /**
-     * Create a breath session record
-     */
     public function create(
         int $userId,
         int $durationSeconds,

@@ -30,9 +30,6 @@ use App\Services\SubscriptionService;
 
 class EventController extends BaseController
 {
-    /**
-     * Inject all services needed for both store() and track()
-     */
     public function __construct(
         protected UserTrackingService $trackingService,
         protected DeviceService $deviceService,
@@ -161,16 +158,14 @@ class EventController extends BaseController
         return $this->sendResponse($tracking->apple_health_connected, 'Health connected event processed successfully.');
     }
 
-    public function track(Request $request)
+    public function recordUserEvent(Request $request)
     {
         $event = $request->input('event');
 
         try {
             switch ($event) {
 
-                /**
-                 * EVENT 4 – PRIMARY REASON
-                 */
+                // EVENT 4 – PRIMARY REASON
                 case 'primary_reason_selected':
 
                     $validated = $request->validate([
@@ -199,9 +194,7 @@ class EventController extends BaseController
                         )
                     );
 
-                /**
-                 * EVENT 6 – BREATH SESSION
-                 */
+                // EVENT 6 – BREATH SESSION
                 case 'first_breath_session_completed':
                 case 'breath_session_completed':
 
@@ -245,9 +238,7 @@ class EventController extends BaseController
                             : null,
                     ]);
 
-                /**
-                 * EVENT 7 – APP ACTIVE
-                 */
+                // EVENT 7 – APP ACTIVE
                 case 'app_active':
 
                     if (!$request->user()) {
@@ -272,9 +263,8 @@ class EventController extends BaseController
                     );
 
                     return response()->json($result);
-                /**
-                 * EVENT 8 – TRIAL & SUBSCRIPTION
-                 */
+
+                // EVENT 8 – TRIAL & SUBSCRIPTION
                 case 'trial_started':
 
                     if (!$request->user()) {

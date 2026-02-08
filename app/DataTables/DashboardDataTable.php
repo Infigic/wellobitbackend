@@ -130,11 +130,7 @@ class DashboardDataTable extends DataTable
 
         $request = request();
 
-        /*
-        |------------------------------------------------------------------
-        | Acquisition Channel
-        |------------------------------------------------------------------
-        */
+        // Acquisition Channel
         $query->when($request->filled('acquisition_channel'), function ($q) use ($request) {
             $channel = $request->acquisition_channel;
 
@@ -152,11 +148,7 @@ class DashboardDataTable extends DataTable
             }
         });
 
-        /*
-        |------------------------------------------------------------------
-        | Subscription Status
-        |------------------------------------------------------------------
-        */
+        // Subscription Status
         $query->when($request->filled('subscription_status'), function ($q) use ($request) {
             match ($request->subscription_status) {
 
@@ -178,29 +170,17 @@ class DashboardDataTable extends DataTable
             };
         });
 
-        /*
-        |------------------------------------------------------------------
-        | Onboarding Stage
-        |------------------------------------------------------------------
-        */
+        // Onboarding Stage
         $query->when($request->filled('onboarding_stage'), function ($q) use ($request) {
             match ($request->onboarding_stage) {
-
-                // User registered but NOT activated
                 'registered' => $q->whereNull('first_breath_session_at'),
-
-                // User activated (first session completed)
                 'activated' => $q->whereNotNull('first_breath_session_at'),
 
                 default => null,
             };
         });
 
-        /*
-        |------------------------------------------------------------------
-        | Apple Watch
-        |------------------------------------------------------------------
-        */
+        // Apple Watch
         $query->when($request->filled('apple_watch'), function ($q) use ($request) {
             match ($request->apple_watch) {
                 'connected'     => $q->where('has_apple_watch', true),
@@ -209,11 +189,7 @@ class DashboardDataTable extends DataTable
             };
         });
 
-        /*
-        |------------------------------------------------------------------
-        | Activity Status
-        |------------------------------------------------------------------
-        */
+        // Activity Status
         $query->when($request->filled('activity_status'), function ($q) use ($request) {
             match ($request->activity_status) {
                 'active_today' => $q->activateToday(),
@@ -224,11 +200,7 @@ class DashboardDataTable extends DataTable
             };
         });
 
-        /*
-        |------------------------------------------------------------------
-        | Primary Reason
-        |------------------------------------------------------------------
-        */
+        // Primary Reason
         $query->when($request->filled('primary_reason'), function ($q) use ($request) {
             $q->where('primary_reason_to_use', $request->primary_reason);
         });
@@ -236,9 +208,6 @@ class DashboardDataTable extends DataTable
         return $query;
     }
 
-    /**
-     * Optional method if you want to use the html builder.
-     */
     public function html(): HtmlBuilder
     {
         return $this->builder()
@@ -258,9 +227,6 @@ class DashboardDataTable extends DataTable
             ->pageLength(10);
     }
 
-    /**
-     * Get the dataTable columns definition.
-     */
     public function getColumns(): array
     {
         return [
@@ -274,12 +240,6 @@ class DashboardDataTable extends DataTable
             Column::make('is_paid')->title('PLAN'),
             Column::make('stage')->title('STAGE'),
             Column::make('primary_reason_to_use')->title('REASON'),
-
-            // Column::computed('action')
-            //     ->exportable(false)
-            //     ->printable(false)
-            //     ->width(60)
-            //     ->addClass('text-center'),
         ];
     }
 

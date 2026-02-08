@@ -16,9 +16,6 @@ class BreathSessionService
         protected UserTrackingRepositoryInterface $userTrackingRepo
     ) {}
 
-    /**
-     * Entry point from EventController
-     */
     public function handle(User $user, array $payload): array
     {
         $event = $payload['event'] ?? null;
@@ -36,7 +33,7 @@ class BreathSessionService
     }
 
     /**
-     * EVENT 6a – FIRST COMPLETED SESSION (fire-once)
+     * EVENT 6a – FIRST COMPLETED SESSION
      */
     private function handleFirstSession(User $user, array $payload): array
     {
@@ -54,9 +51,6 @@ class BreathSessionService
                 throw new InvalidArgumentException('User tracking not found');
             }
 
-            /**
-             * Already recorded → DO NOT overwrite
-             */
             if ($tracking->first_breath_session_at !== null) {
                 return [
                     'status' => 'already_exists',
@@ -66,12 +60,9 @@ class BreathSessionService
                 ];
             }
 
-            /**
-             * Create first breath session
-             */
             $this->breathSessionRepo->create(
                 $user->id,
-                0, // duration unknown for first session
+                0,
                 $completedAt
             );
 
@@ -92,9 +83,6 @@ class BreathSessionService
      */
     private function handleSubsequentSession(User $user, array $payload): array
     {
-        /**
-         * STRICT VALIDATION
-         */
         if (!isset($payload['session_duration_seconds'])) {
             throw new InvalidArgumentException('session_duration_seconds is required');
         }

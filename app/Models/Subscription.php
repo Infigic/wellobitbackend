@@ -26,18 +26,11 @@ class Subscription extends Model
         'paid_started_at'  => 'datetime',
     ];
 
-    /**
-     * Relationship: subscription belongs to a user
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Computed subscription status
-     * free | trial | paid | expired
-     */
     public function getStatusAttribute(): string
     {
         $now = Carbon::now();

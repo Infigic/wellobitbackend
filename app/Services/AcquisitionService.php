@@ -14,10 +14,6 @@ class AcquisitionService
         protected DeviceService $deviceService
     ) {}
 
-    /**
-     * Handle attribution info event.
-     * EVENT 3: attribution_info
-     */
     public function handleAttributionInfo(array $data)
     {
         $deviceId = $this->deviceService->getDeviceIdByUuid($data['uuid']);

@@ -80,7 +80,6 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
             return false;
         }
 
-        // Do not overwrite if already set
         if ($tracking->primary_reason_to_use !== null) {
             return true;
         }
@@ -91,16 +90,12 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
     }
 
     // EVENT 6
-    /**
-     * Set first breath session time ONCE (fire-once guarantee)
-     */
     public function setFirstBreathSessionAt(
         UserTracking $tracking,
         Carbon $time
     ): bool {
         return DB::transaction(function () use ($tracking, $time) {
 
-            // Lock row to avoid race condition
             $lockedTracking = UserTracking::where('id', $tracking->id)
                 ->lockForUpdate()
                 ->first();
@@ -109,7 +104,6 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
                 return false;
             }
 
-            // Fire-once: do not overwrite
             if ($lockedTracking->first_breath_session_at !== null) {
                 return false;
             }
@@ -124,9 +118,6 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
     }
 
     // EVENT 7
-    /**
-     * Update last active time
-     */
     public function updateLastActiveAt(
         UserTracking $tracking,
         Carbon $time

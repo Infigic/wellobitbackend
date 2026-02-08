@@ -12,9 +12,6 @@ class UserTrackingService
 {
     protected UserTrackingRepositoryInterface $trackingRepo;
 
-    /**
-     * Debounce window for app_active (minutes)
-     */
     protected int $appActiveDebounceMinutes;
 
     public function __construct(
@@ -118,8 +115,6 @@ class UserTrackingService
         int $userId,
         ?string $reason
     ): array {
-
-        // Skipped in UI: no-op
         if (!$reason) {
             return [
                 'success' => true,
@@ -128,7 +123,6 @@ class UserTrackingService
             ];
         }
 
-        // Tracking must exist (created at app_installed)
         $tracking = $this->trackingRepo->findByUserId($userId);
 
         if (!$tracking) {
@@ -139,7 +133,6 @@ class UserTrackingService
             ];
         }
 
-        // Save only once
         if ($tracking->primary_reason_to_use !== null) {
             return [
                 'success' => true,
@@ -148,7 +141,6 @@ class UserTrackingService
             ];
         }
 
-        // Persist
         $this->trackingRepo->setPrimaryReason($tracking, $reason);
 
         return [
@@ -178,7 +170,6 @@ class UserTrackingService
 
         $incomingTime = Carbon::parse($lastActiveAt);
 
-        // First activity ever → always update
         if (!$tracking->last_active_at) {
             $this->trackingRepo->updateLastActiveAt(
                 $tracking,
@@ -195,7 +186,6 @@ class UserTrackingService
         $diffMinutes = Carbon::parse($tracking->last_active_at)
             ->diffInMinutes($incomingTime);
 
-        // Debounce: ignore if too frequent
         if ($diffMinutes < $this->appActiveDebounceMinutes) {
             return [
                 'success' => true,
@@ -204,7 +194,6 @@ class UserTrackingService
             ];
         }
 
-        // Update last_active_at
         $this->trackingRepo->updateLastActiveAt(
             $tracking,
             $incomingTime

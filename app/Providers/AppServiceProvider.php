@@ -2,22 +2,14 @@
 
 namespace App\Providers;
 
-// use Illuminate\Pagination\Paginator;
-
 use Illuminate\Support\ServiceProvider;
 use Yajra\DataTables\Html\Builder;
 
-/**
- * Repositories - Contracts
- */
 use App\Repositories\Contracts\UserTrackingRepositoryInterface;
 use App\Repositories\Contracts\DeviceRepositoryInterface;
 use App\Repositories\Contracts\AcquisitionAttributionInterface;
 use App\Repositories\Contracts\BreathSessionRepositoryInterface;
 
-/**
- * Repositories - Eloquent
- */
 use App\Repositories\Eloquent\UserTrackingRepository;
 use App\Repositories\Eloquent\DeviceRepository;
 use App\Repositories\Eloquent\AcquisitionAttributionRepository;
@@ -57,6 +49,5 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Builder::useVite();
-        // Paginator::useBootstrapFive();
     }
 }
