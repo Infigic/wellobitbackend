@@ -7,6 +7,7 @@ use App\Http\Controllers\API\V4\UserController as V4UserController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\MindfulnessReportController;
+use App\Http\Controllers\API\V4\EventController;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,3 +73,11 @@ Route::get('testtoken/{id}', function ($id) {
     $token = $user->createToken('Aayoo')->plainTextToken;
     echo $token;
 });
+
+// Public Event Tracking
+Route::post('/events/public', [EventController::class, 'store']);
+
+// User Tracking
+Route::post('events', [EventController::class, 'recordUserEvent'])
+    ->middleware('auth:sanctum');
+

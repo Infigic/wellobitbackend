@@ -10,7 +10,6 @@ use App\Http\Controllers\API\ReadinessScoreController;
 use App\Http\Controllers\API\MindfulnessReportController;
 use App\Http\Controllers\API\FaqCategoryController;
 use App\Http\Controllers\API\FaqController;
-use App\Http\Controllers\API\EventController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,9 +81,3 @@ Route::prefix('faqs')->group(function () {
     });
 });
 
-// Public Event Tracking
-Route::post('/events/public', [EventController::class, 'store']);
-
-// Private Event Tracking
-Route::post('events', [EventController::class, 'recordUserEvent'])
-    ->middleware('auth:sanctum');
