@@ -53,21 +53,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('home', [HrvController::class, 'home'])->name('api.hrvs.home');
 
     Route::prefix('faq-categories')->group(function () {
-        Route::post('/', [FaqCategoryController::class, 'store']);      
-        Route::get('/', [FaqCategoryController::class, 'index']);       
-        Route::put('{id}', [FaqCategoryController::class, 'update']);   
+        Route::post('/', [FaqCategoryController::class, 'store']);
+        Route::get('/', [FaqCategoryController::class, 'index']);
+        Route::put('{id}', [FaqCategoryController::class, 'update']);
         Route::delete('{id}', [FaqCategoryController::class, 'destroy']);
     });
-
-
 });
 
 Route::post('/mindfulness/reports', [MindfulnessReportController::class, 'storeReports']);
 Route::post('/mindfulness/reports/fetch', [MindfulnessReportController::class, 'fetchReportsByTimestamp']);
 
-Route::post('hr', [HrController::class, 'store'])->name('api.hr.store');
-Route::post('hr/fetch', [HrController::class, 'fetchByTimestamp'])->name('api.hr.fetch');
-Route::post('readiness/calculate', [ReadinessScoreController::class, 'calculate'])->name('api.readiness.calculate');
+// Route::post('hr', [HrController::class, 'store'])->name('api.hr.store');
+// Route::post('hr/fetch', [HrController::class, 'fetchByTimestamp'])->name('api.hr.fetch');
+// Route::post('readiness/calculate', [ReadinessScoreController::class, 'calculate'])->name('api.readiness.calculate');
 
 // FAQ
 Route::prefix('faqs')->group(function () {
@@ -82,3 +80,4 @@ Route::prefix('faqs')->group(function () {
         Route::delete('{id}', [FaqController::class, 'destroy'])->whereNumber('id'); // Delete
     });
 });
+

@@ -7,6 +7,7 @@ use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\FaqCategoryController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -65,11 +66,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{faq}/edit', [FaqController::class, 'edit'])->name('faqs.edit');
         Route::put('/{faq}', [FaqController::class, 'update'])->name('faqs.update');
         Route::delete('/{faq}', [FaqController::class, 'destroy'])->name('faqs.destroy');
-        Route::post('/', [FaqController::class, 'store'])->name('faqs.store');  
+        Route::post('/', [FaqController::class, 'store'])->name('faqs.store');
     });
-    
+
     // FAQ Category Routes
     Route::resource('faq-categories', FaqCategoryController::class);
 
+    //Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/dashboard/export', [DashboardController::class, 'exportCSV'])->name('dashboard.exportCSV');
 });
-
