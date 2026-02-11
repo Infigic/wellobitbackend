@@ -25,7 +25,7 @@ class DashboardDataTable extends DataTable
                             <div class="user-name">' . e($userTracking->first_name) . '</div>
                             <div class="user-email">' . e($userTracking->email) . '</div>
                        </div>'
-                    : '';
+                    : $userTracking->device->uuid;
             })
             ->editColumn('installed_at', function ($userTracking) {
                 return $userTracking->installed_at
@@ -64,10 +64,10 @@ class DashboardDataTable extends DataTable
                 if (!$userTracking->primary_reason_to_use) {
                     return '';
                 }
-                
+
                 $reasons = config('primary_reason.reasons');
                 $label = $reasons[$userTracking->primary_reason_to_use] ?? $userTracking->primary_reason_to_use;
-                
+
                 return '<span class="badge badge-orange">' . e($label) . '</span>';
             })
             ->addColumn('channel', function ($userTracking) {
@@ -99,9 +99,11 @@ class DashboardDataTable extends DataTable
             ->addColumn('stage', function ($userTracking) {
                 if ($userTracking->first_breath_session_at) {
                     return '<span class="badge badge-blue">Activated</span>';
+                } else if ($userTracking->user_id) {
+                    return '<span class="badge badge-red">Registered</span>';
+                } else {
+                    return '<span class="badge badge-gray"> Installed </span>';
                 }
-
-                return '<span class="badge badge-red">Registered</span>';
             })
 
             ->rawColumns([

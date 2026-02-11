@@ -123,7 +123,7 @@ class UserTrackingService
             ];
         }
 
-        $tracking = $this->trackingRepo->findByUserId($userId);
+        $tracking = $this->trackingRepo->getOrCreateUser($userId);
 
         if (!$tracking) {
             return [
@@ -158,7 +158,7 @@ class UserTrackingService
         string $lastActiveAt
     ): array {
 
-        $tracking = $this->trackingRepo->findByUserId($userId);
+        $tracking = $this->trackingRepo->getOrCreateUser($userId);
 
         if (!$tracking) {
             return [

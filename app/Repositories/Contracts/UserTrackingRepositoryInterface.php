@@ -16,7 +16,7 @@ interface UserTrackingRepositoryInterface
 
     public function updateHealthConnected(int $user_id, array $data);
 
-    public function findByUserId(int $userId): ?UserTracking;
+    public function getOrCreateUser(int $userId): ?UserTracking;
 
     /**
      * Event 4: Primary Reason Selected

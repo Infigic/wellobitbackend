@@ -3,12 +3,14 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\User;
+use App\Models\UserDevice;
 use App\Models\UserTracking;
 use App\Repositories\Contracts\UserTrackingRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
-class UserTrackingRepository implements UserTrackingRepositoryInterface 
+class UserTrackingRepository implements UserTrackingRepositoryInterface
 {
     public function create(array $data)
     {
@@ -35,7 +37,7 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
 
     public function updateAppleWatchConnected(int $user_id, array $data)
     {
-        $userTracking = UserTracking::where('user_id', $user_id)->first();
+        $userTracking = $this->getOrCreateUser($user_id);
         
         if (!$userTracking) {
             throw new \Exception('UserTracking record not found with user_id: ' . $user_id);
@@ -48,8 +50,8 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
 
     public function updateHealthConnected(int $user_id, array $data)
     {
-        $userTracking = UserTracking::where('user_id', $user_id)->first();
-        
+        $userTracking = $this->getOrCreateUser($user_id);
+
         if (!$userTracking) {
             throw new \Exception('UserTracking record not found with user_id: ' . $user_id);
         }
@@ -60,9 +62,35 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
     }
 
     // EVENT 4
-    public function findByUserId(int $userId): ?UserTracking
+    public function getOrCreateUser(int $userId): ?UserTracking
     {
-        return UserTracking::where('user_id', $userId)->first();
+
+        $userTracking = UserTracking::where('user_id', $userId)->first();
+        $user = User::find($userId);
+        if (!$userTracking) {
+            DB::transaction(function () use ($user, &$userTracking) {
+                $userDevice = UserDevice::create([
+                    'user_id' => $user->id,
+                    'uuid' => Str::uuid()->toString(),
+                    'timezone' => config('app.timezone'),
+                    'locale' => app()->getLocale(),
+                    // 'app_version' => '1.0.0',
+                ]);
+
+                $userTracking = UserTracking::create([
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'first_name' => $user->name,
+                    'device_id' => $userDevice->id,
+                    'installed_at' => $user->created_at,
+                    'primary_reason_to_use' => $user->reason
+                ]);
+            });
+
+            return $userTracking;
+        }
+
+        return $userTracking;
     }
 
     public function setPrimaryReason(UserTracking $tracking, string $reason): bool
@@ -74,7 +102,7 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
 
     public function updatePrimaryReason(int $userId, string $reason): bool
     {
-        $tracking = $this->findByUserId($userId);
+        $tracking = $this->getOrCreateUser($userId);
 
         if (!$tracking) {
             return false;

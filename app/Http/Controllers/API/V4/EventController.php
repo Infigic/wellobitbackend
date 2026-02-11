@@ -169,8 +169,7 @@ class EventController extends BaseController
                 case 'primary_reason_selected':
 
                     $validated = $request->validate([
-                        'primary_reason_to_use' =>
-                        'nullable|string|in:stress,sleep,breathwork,hrv,focus,curiosity'
+                        'primary_reason_to_use' => 'nullable|string|max:255'
                     ]);
 
                     $userId = auth()->id();

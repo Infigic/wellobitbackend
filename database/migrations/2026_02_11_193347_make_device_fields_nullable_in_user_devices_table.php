@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('user_devices', function (Blueprint $table) {
+            $table->string('timezone')->nullable()->change();
+            $table->string('locale')->nullable()->change();
+            $table->string('app_version')->nullable()->change();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('user_devices', function (Blueprint $table) {
+            $table->string('timezone')->nullable(false)->change();
+            $table->string('locale')->nullable(false)->change();
+            $table->string('app_version')->nullable(false)->change();
+        });
+    }
+};

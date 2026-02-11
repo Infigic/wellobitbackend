@@ -166,10 +166,12 @@ class DashboardController extends Controller
                     $plan = 'Expired';
                 }
 
-                if ($tracking->first_breath_session_at && $tracking->device && $tracking->device->apple_watch_model) {
-                    $stage = 'Completed';
-                } else {
+                if ($tracking->first_breath_session_at) {
+                    $stage = 'Activated';
+                } elseif ($tracking->user_id) {
                     $stage = 'Registered';
+                } else {
+                    $stage = 'Installed';
                 }
 
                 $watchModel = $tracking->has_apple_watch && $tracking->device
@@ -177,7 +179,7 @@ class DashboardController extends Controller
                     : 'Not Connected';
 
                 fputcsv($file, [
-                    $tracking->first_name ?? 'N/A',
+                    $tracking->first_name ?? $tracking->device->uuid,
                     $tracking->email ?? 'N/A',
                     $tracking->installed_at ? $tracking->installed_at->format('M d, Y H:i') : 'N/A',
                     $tracking->first_breath_session_at ? $tracking->first_breath_session_at->format('M d, Y H:i') : 'Never',
