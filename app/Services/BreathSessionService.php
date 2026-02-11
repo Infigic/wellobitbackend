@@ -45,7 +45,7 @@ class BreathSessionService
 
         return DB::transaction(function () use ($user, $completedAt) {
 
-            $tracking = $this->userTrackingRepo->findByUserId($user->id);
+            $tracking = $this->userTrackingRepo->getOrCreateUser($user->id);
 
             if (!$tracking) {
                 throw new InvalidArgumentException('User tracking not found');
@@ -107,7 +107,7 @@ class BreathSessionService
                 $completedAt
             );
 
-            $tracking = $this->userTrackingRepo->findByUserId($user->id);
+            $tracking = $this->userTrackingRepo->getOrCreateUser($user->id);
 
             if ($tracking) {
                 $tracking->update([
