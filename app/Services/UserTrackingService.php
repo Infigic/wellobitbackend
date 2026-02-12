@@ -127,17 +127,8 @@ class UserTrackingService
 
         if (!$tracking) {
             return [
-                'success' => true,
-                'status'  => 'ignored',
-                'message' => 'Tracking record not found. Event ignored.'
-            ];
-        }
-
-        if ($tracking->primary_reason_to_use !== null) {
-            return [
-                'success' => true,
-                'status'  => 'ignored',
-                'message' => 'Primary reason already set.'
+                'success' => false,
+                'message' => 'Tracking record not found.'
             ];
         }
 
