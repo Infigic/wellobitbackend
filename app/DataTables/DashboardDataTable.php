@@ -48,17 +48,17 @@ class DashboardDataTable extends DataTable
             ->editColumn('is_paid', function ($userTracking) {
                 if ($userTracking->is_paid) {
                     return '<span class="badge badge-green">Paid</span>';
-                }
-
-                if (
+                } elseif (
                     $userTracking->trial_started_at &&
                     $userTracking->trial_ends_at &&
                     $userTracking->trial_ends_at > now()
                 ) {
                     return '<span class="badge badge-orange">Trial</span>';
+                } elseif ($userTracking->trial_started_at) {
+                    return '<span class="badge badge-red">Expired</span>';
+                } else {
+                    return '<span class="badge badge-gray">Not Started</span>';
                 }
-
-                return '<span class="badge badge-red">Expired</span>';
             })
             ->editColumn('primary_reason_to_use', function ($userTracking) {
                 if (!$userTracking->primary_reason_to_use) {

@@ -162,8 +162,10 @@ class DashboardController extends Controller
                     $plan = 'Paid';
                 } elseif ($tracking->trial_started_at && $tracking->trial_ends_at && $tracking->trial_ends_at > now()) {
                     $plan = 'Trial';
-                } else {
+                } elseif ($tracking->trial_started_at) {
                     $plan = 'Expired';
+                } else {
+                    $plan = 'Not Started';
                 }
 
                 if ($tracking->first_breath_session_at) {

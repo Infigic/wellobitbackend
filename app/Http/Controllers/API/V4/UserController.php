@@ -12,7 +12,24 @@ class UserController extends BaseController
         $user = $request->user();
 
         if ($user) {
-            return $this->sendResponse($user, 'Profile detail retrieved successfully.');
+            $personalisedDataStored = !empty($user->age) || !empty($user->gender) || !empty($user->activity_level) || !empty($user->reason);
+
+            $trialStatus = 'NotStarted';
+            $tracking = $user->tracking;
+
+            if ($tracking && $tracking->trial_started_at) {
+                if ($tracking->trial_ends_at && now()->greaterThan($tracking->trial_ends_at)) {
+                    $trialStatus = 'Expired';
+                } else {
+                    $trialStatus = 'Active';
+                }
+            }
+
+            $userData = $user->makeHidden(['tracking'])->toArray();
+            $userData['personalised_data_stored'] = $personalisedDataStored;
+            $userData['trialStatus'] = $trialStatus;
+
+            return $this->sendResponse($userData, 'Profile detail retrieved successfully.');
         } else {
             return $this->sendError('Invalid request', ['error' => 'User not found']);
         }
