@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\MindfulnessReportController;
 use App\Http\Controllers\API\V4\EventController;
+use App\Http\Controllers\Auth\SocialAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,3 +82,5 @@ Route::post('/events/public', [EventController::class, 'store']);
 Route::post('events', [EventController::class, 'recordUserEvent'])
     ->middleware('auth:sanctum');
 
+// Social Auth (apple / google)
+Route::post('/social-login', [SocialAuthController::class, 'handle']);

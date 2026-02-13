@@ -63,13 +63,17 @@ class UserTrackingService
             throw new \Exception('This uuid is already registered with another user.');
         }
 
+        $device->update([
+            'user_id' => $user->id
+        ]);
+
         return $this->trackingRepo->updateRegister($device->id, [
-            'user_id' => $user->id,
-            'email' => $data['email'] ?? null,
-            'first_name' => $data['first_name'] ?? null,
-            'consent_email' => $data['consent_email'] ?? null,
-            'signup_method' => $data['signup_method'] ?? null,
-            'signup_source' => $data['signup_source'] ?? null,
+            'user_id'       => $user->id,
+            'email'         => $data['email'],
+            'first_name'    => $data['first_name'],
+            'consent_email' => $data['consent_email'],
+            'signup_method' => $data['signup_method'],
+            'signup_source' => $data['signup_source'],
         ]);
     }
 
