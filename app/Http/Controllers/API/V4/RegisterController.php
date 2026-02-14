@@ -154,7 +154,7 @@ class RegisterController extends BaseController
       'token' => 'required|string',
       'name' => 'nullable|string|max:255',
       'email' => 'nullable|email|max:255',
-      'uuid' => 'required|uuid|exists:user_devices,uuid',
+      'uuid' => 'uuid|exists:user_devices,uuid',
     ]);
 
     if ($validator->fails()) {
@@ -237,42 +237,42 @@ class RegisterController extends BaseController
       ]);
 
       $isNewUser = true;
-    }
 
-    // 4. Auto-trigger user_registered event if this is a new user
-    if ($isNewUser && $request->has('uuid')) {
-      try {
-        DB::transaction(function () use ($user, $platform, $request) {
-          Log::info('AUTO-TRIGGER: user_registered event for social login', [
+      //Call Event2-user_registered event for new user
+      if ($request->has('uuid')) {
+        try {
+          DB::transaction(function () use ($user, $platform, $request) {
+            Log::info('AUTO-TRIGGER: user_registered event for social login', [
+              'user_id' => $user->id,
+              'email' => $user->email,
+              'platform' => $platform,
+              'uuid' => $request->uuid,
+            ]);
+
+            $this->deviceService->handleRegisteredUser([
+              'uuid' => $request->uuid,
+              'email' => $user->email,
+            ]);
+
+            $this->trackingService->handleRegisteredUser([
+              'uuid' => $request->uuid,
+              'email' => $user->email,
+              'first_name' => $user->name,
+              'signup_method' => $platform,
+              'consent_email' => true,
+            ]);
+
+            Log::info('SUCCESS: user_registered event triggered', [
+              'user_id' => $user->id,
+            ]);
+          });
+        } catch (\Exception $e) {
+          Log::error('FAILED: user_registered event trigger (transaction rolled back)', [
             'user_id' => $user->id,
-            'email' => $user->email,
-            'platform' => $platform,
-            'uuid' => $request->uuid,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
           ]);
-
-          $this->deviceService->handleRegisteredUser([
-            'uuid' => $request->uuid,
-            'email' => $user->email,
-          ]);
-
-          $this->trackingService->handleRegisteredUser([
-            'uuid' => $request->uuid,
-            'email' => $user->email,
-            'first_name' => $user->name,
-            'signup_method' => $platform,
-            'consent_email' => true,
-          ]);
-
-          Log::info('SUCCESS: user_registered event triggered', [
-            'user_id' => $user->id,
-          ]);
-        });
-      } catch (\Exception $e) {
-        Log::error('FAILED: user_registered event trigger (transaction rolled back)', [
-          'user_id' => $user->id,
-          'error' => $e->getMessage(),
-          'trace' => $e->getTraceAsString(),
-        ]);
+        }
       }
     }
 
