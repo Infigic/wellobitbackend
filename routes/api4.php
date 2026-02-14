@@ -81,6 +81,3 @@ Route::post('/events/public', [EventController::class, 'store']);
 // User Tracking
 Route::post('events', [EventController::class, 'recordUserEvent'])
     ->middleware('auth:sanctum');
-
-// Social Auth (apple / google)
-Route::post('/social-login', [SocialAuthController::class, 'handle']);
