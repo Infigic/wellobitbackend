@@ -17,7 +17,7 @@ class AppleWatchConnectedRequest extends FormRequest
         return [
             'user_id' => 'required|integer|exists:user_trackings,user_id',
             'has_apple_watch' => 'nullable|boolean',
-            'apple_watch_model' => ['nullable', Rule::in(config('event.apple_watch_model'))],
+            'apple_watch_model' => 'nullable|string|max:100',
             'apple_watch_os_version' => 'nullable|string|max:50',
             'apple_health_connected' => 'nullable|boolean',
         ];
