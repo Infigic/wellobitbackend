@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\MindfulnessReportController;
 use App\Http\Controllers\API\V4\EventController;
-use App\Http\Controllers\Auth\SocialAuthController;
 
 /*
 |--------------------------------------------------------------------------
