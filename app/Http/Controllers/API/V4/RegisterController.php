@@ -304,11 +304,21 @@ class RegisterController extends BaseController
       }
 
       // 2. Fetch user
-      $user = User::where('email', $request->email)->first();
+      // $user = User::where('email', $request->email)->first();
+      $user = User::withTrashed()->where('email', $request->email)->first();
 
       // 3. User not found
       if (!$user) {
           return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials'], 401);
+      }
+
+      // 6. Soft delete check
+      if ($user->trashed()) {
+          return $this->sendError(
+              'Unauthorised.',
+              ['error' => 'This account has been deactivated.'],
+              403
+          );
       }
 
       // 4. Role check
@@ -323,15 +333,6 @@ class RegisterController extends BaseController
       // 5. Password check
       if (!Hash::check($request->password, $user->password)) {
           return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials'], 401);
-      }
-
-      // 6. Soft delete check
-      if ($user->trashed()) {
-          return $this->sendError(
-              'Unauthorised.',
-              ['error' => 'This account has been deactivated.'],
-              403
-          );
       }
 
       /**
