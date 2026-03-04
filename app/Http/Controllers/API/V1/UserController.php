@@ -18,10 +18,13 @@ class UserController extends BaseController
         // Revoke all tokens
         $user->tokens()->delete();
 
-        // Anonymize personal data
+        // Prepare modified name & email
+        $originalName = $user->name;
+        $originalEmail = $user->email;
+
         $user->update([
-            'name' => 'Deleted User',
-            'email' => 'deleted_' . $user->id . '_' . time() . '@deleted.com',
+            'name' => 'Deleted ' . $originalName,
+            'email' => 'deleted_' . time() . '_' . $originalEmail,
             'profile_image' => null,
             'password' => bcrypt(Str::random(32)),
             'remember_token' => null,
@@ -30,6 +33,7 @@ class UserController extends BaseController
             'otp_expires_at' => null,
             'age' => null,
             'gender' => null,
+            'is_active' => 0,
             'activity_level' => null,
             'reason' => null,
         ]);
