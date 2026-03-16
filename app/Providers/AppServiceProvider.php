@@ -14,6 +14,8 @@ use App\Repositories\Eloquent\UserTrackingRepository;
 use App\Repositories\Eloquent\DeviceRepository;
 use App\Repositories\Eloquent\AcquisitionAttributionRepository;
 use App\Repositories\Eloquent\BreathSessionRepository;
+use App\Repositories\Contracts\AppConfigInterface;
+use App\Repositories\Eloquent\AppConfigRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -40,6 +42,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             BreathSessionRepositoryInterface::class,
             BreathSessionRepository::class
+        );
+
+        $this->app->bind(
+            AppConfigInterface::class,
+            AppConfigRepository::class
         );
     }
 
