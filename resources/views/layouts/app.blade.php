@@ -98,6 +98,14 @@
                     </a>
                 </li>
                 <li class="nav-item menu-items">
+                    <a class="nav-link" href="{{ route('app-configs.index') }}">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-cog text-warning"></i>
+                        </span>
+                        <span class="menu-title">App Configs</span>
+                    </a>
+                </li>
+                <li class="nav-item menu-items">
                     <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false"
                         aria-controls="ui-basic">
                         <span class="menu-icon">

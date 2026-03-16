@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\FaqCategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AppConfigController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -75,4 +76,13 @@ Route::middleware(['auth'])->group(function () {
     //Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::get('/dashboard/export', [DashboardController::class, 'exportCSV'])->name('dashboard.exportCSV');
+
+    // App Config Routes
+    Route::get('/app-configs', [AppConfigController::class, 'index'])->name('app-configs.index');
+    Route::get('/app-configs/create', [AppConfigController::class, 'create'])->name('app-configs.create');
+    Route::post('/app-configs', [AppConfigController::class, 'store'])->name('app-configs.store');
+    Route::get('/app-configs/{app_config}/edit', [AppConfigController::class, 'edit'])->name('app-configs.edit');
+    Route::put('/app-configs/{app_config}', [AppConfigController::class, 'update'])->name('app-configs.update');
+    Route::delete('/app-configs/{app_config}', [AppConfigController::class, 'destroy'])->name('app-configs.destroy');
+    Route::get('/app-configs/togglestatus/{app_config}', [AppConfigController::class, 'toggleStatus'])->name('app-configs.togglestatus');
 });
