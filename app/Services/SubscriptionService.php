@@ -6,6 +6,9 @@ use App\Models\Subscription;
 use App\Models\UserTracking;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Models\UserDevice;
+use Illuminate\Support\Str;
 
 class SubscriptionService
 {
@@ -30,6 +33,9 @@ class SubscriptionService
 
             $trialStartedAt = Carbon::parse($data['trial_started_at'])->format('Y-m-d H:i:s');
             $trialEndsAt    = Carbon::parse($data['trial_ends_at'])->format('Y-m-d H:i:s');
+
+            $userTracking = $this->getOrCreateUser($userId);
+
 
             $subscription = Subscription::create([
                 'user_id'          => $userId,
@@ -101,6 +107,37 @@ class SubscriptionService
             ];
 
         });
+    }
+
+
+    public function getOrCreateUser(int $userId): ?UserTracking
+    {
+
+        $userTracking = UserTracking::where('user_id', $userId)->first();
+        $user = User::find($userId);
+        if (!$userTracking) {
+            DB::transaction(function () use ($user, &$userTracking) {
+                $userDevice = UserDevice::create([
+                    'user_id' => $user->id,
+                    'uuid' => Str::uuid()->toString(),
+                    'timezone' => config('app.timezone'),
+                    'locale' => app()->getLocale(),
+                ]);
+
+                $userTracking = UserTracking::create([
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'first_name' => $user->name,
+                    'device_id' => $userDevice->id,
+                    'installed_at' => $user->created_at,
+                    'primary_reason_to_use' => $user->reason
+                ]);
+            });
+
+            return $userTracking;
+        }
+
+        return $userTracking;
     }
 
 }
