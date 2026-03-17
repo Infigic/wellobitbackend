@@ -16,7 +16,8 @@ class UserController extends BaseController
 
             $trialStatus = 'NotStarted';
             $tracking = $user->tracking;
-
+            $trialStartDate = $tracking->trial_started_at ?? null;
+            
             if ($tracking && $tracking->trial_started_at) {
                 if ($tracking->trial_ends_at && now()->greaterThan($tracking->trial_ends_at)) {
                     $trialStatus = 'Expired';
@@ -28,6 +29,7 @@ class UserController extends BaseController
             $userData = $user->makeHidden(['tracking'])->toArray();
             $userData['personalised_data_stored'] = $personalisedDataStored;
             $userData['trialStatus'] = $trialStatus;
+            $userData['trialStartDate'] = $trialStartDate;
 
             return $this->sendResponse($userData, 'Profile detail retrieved successfully.');
         } else {
