@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V4;
 use App\Http\Controllers\API\BaseController;
 use App\Http\Requests\AppConfigRequest;
 use App\Services\AppConfigService;
