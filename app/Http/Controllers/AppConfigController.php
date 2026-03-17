@@ -45,6 +45,8 @@ class AppConfigController extends Controller
     {
         $validate = $request->validated();
         $data = [
+            'config_key' => $validate['config_key'] ?? null,
+            'value_type' => $validate['value_type'] ?? null,
             'config_value' => $validate['config_value'] ?? null,
             'description' => $validate['description'] ?? null,
         ];
