@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\MindfulnessReportController;
 use App\Http\Controllers\API\V4\EventController;
-
+use App\Http\Controllers\API\V4\AppConfigController as V4AppConfigController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -81,3 +81,5 @@ Route::post('/events/public', [EventController::class, 'store']);
 Route::post('events', [EventController::class, 'recordUserEvent'])
     ->middleware('auth:sanctum');
 
+// Config
+Route::get('config', [V4AppConfigController::class, 'getConfig'])->name('api4.config.show');

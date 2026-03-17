@@ -10,7 +10,6 @@ use App\Http\Controllers\API\ReadinessScoreController;
 use App\Http\Controllers\API\MindfulnessReportController;
 use App\Http\Controllers\API\FaqCategoryController;
 use App\Http\Controllers\API\FaqController;
-use App\Http\Controllers\API\AppConfigController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,5 +81,4 @@ Route::prefix('faqs')->group(function () {
     });
 });
 
-// Config
-Route::get('config', [AppConfigController::class, 'getConfig'])->name('api.config.show');
+
