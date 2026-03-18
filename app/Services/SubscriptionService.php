@@ -30,28 +30,7 @@ class SubscriptionService
                 ->lockForUpdate()
                 ->first();
 
-                $userTracking = $this->userTrackingRepo->getOrCreateUser($userId);
-
-            if ($subscription && $subscription->trial_started_at) {
-
-                if (!$userTracking->trial_started_at) {
-
-                    $this->syncTrialToTracking($userTracking, $subscription);
-
-                    return [
-                        'success' => true,
-                        'status'  => 'already_started_synced',
-                        'synced'  => true,
-                        'message' => 'Trial already started, tracking updated',
-                    ];
-                }
-
-                return [
-                    'success' => true,
-                    'status'  => 'already_started',
-                    'message' => 'Trial already started',
-                ];
-            }
+            $userTracking = $this->userTrackingRepo->getOrCreateUser($userId);
 
             $trialStartedAt = Carbon::parse($data['trial_started_at'])->format('Y-m-d H:i:s');
             $trialEndsAt    = Carbon::parse($data['trial_ends_at'])->format('Y-m-d H:i:s');
@@ -59,7 +38,7 @@ class SubscriptionService
             if (!$subscription) {
                 $subscription = Subscription::create([
                     'user_id' => $userId,
-                    'plan_name'        => $data['plan_name'],
+                    'plan_name' => $data['plan_name'],
                 ]);
             }
 
@@ -73,7 +52,8 @@ class SubscriptionService
 
             return [
                 'success' => true,
-                'message' => 'Trial started',
+                'status'  => 'trial started',
+                'message' => 'Subscription trial completed',
                 'data'    => $subscription,
             ];
         });
@@ -86,39 +66,19 @@ class SubscriptionService
     {
         return DB::transaction(function () use ($userId, $payload) {
 
-            $paidStartedAt = Carbon::parse($payload['paid_started_at'])
-                ->toDateTimeString();
-
             $tracking = $this->userTrackingRepo->getOrCreateUser($userId);
 
             $subscription = Subscription::where('user_id', $userId)
                 ->lockForUpdate()
                 ->first();
 
+            $paidStartedAt = Carbon::parse($payload['paid_started_at'])->toDateTimeString();
+
             if (!$subscription) {
                 $subscription = Subscription::create([
                     'user_id' => $userId,
                     'plan_name' => $payload['plan_name'],
                 ]);
-            }
-
-           if ($subscription && $subscription->paid_started_at) {
-
-                if (!$tracking->paid_started_at) {
-                    $this->syncPaidToTracking($tracking, $subscription);
-
-                    return [
-                        'success' => true,
-                        'status'  => 'already_paid_synced',
-                        'message' => 'Subscription already started, tracking updated',
-                    ];
-                }
-
-                return [
-                    'success' => true,
-                    'status'  => 'already_paid',
-                    'message' => 'Subscription already started',
-                ];
             }
 
             $subscription->update([
@@ -130,15 +90,14 @@ class SubscriptionService
 
             return [
                 'success' => true,
-                'message' => 'Subscription started',
-                'status'  => 'subscription_started',
+                'status'  => 'Subscription started',
+                'message' => 'Subscription completed',
                 'data' => [
-                    'subscription_id' => $subscription?->id,
+                    'subscription_id' => $subscription->id,
                     'plan_name'       => $payload['plan_name'],
                     'paid_started_at' => $paidStartedAt,
                 ]
             ];
-
         });
     }
 
