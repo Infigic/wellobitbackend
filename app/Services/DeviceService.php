@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\UserDevice;
+use App\Models\UserTracking;
 use App\Repositories\Contracts\DeviceRepositoryInterface;
+use Illuminate\Support\Str;
 
 class DeviceService
 {
@@ -51,25 +53,13 @@ class DeviceService
      */
     public function handleAppleWatchConnected(array $data)
     {
-        $userDevice = UserDevice::where('user_id', $data['user_id'])->first();
 
-        if (!$userDevice) {
-            throw new \Exception('User device not found for user_id: ' . $data['user_id']);
-        }
+        $userDevice = $this->ensureUserDevice($data['user_id']);
 
-        $updates = [];
-
-        if (isset($data['apple_watch_model']) && $userDevice->apple_watch_model != $data['apple_watch_model']) {
-            $updates['apple_watch_model'] = $data['apple_watch_model'];
-        }
-
-        if (isset($data['apple_watch_os_version']) && $userDevice->apple_watch_os_version != $data['apple_watch_os_version']) {
-            $updates['apple_watch_os_version'] = $data['apple_watch_os_version'];
-        }
-
-        if (empty($updates)) {
-            throw new \Exception('No changes detected for apple watch connection.');
-        }
+        $updates = [
+            'apple_watch_model' => $data['apple_watch_model'] ?? null,
+            'apple_watch_os_version' => $data['apple_watch_os_version'] ?? null,
+        ];
 
         return $this->deviceRepository->updateAppleWatchConnected($data['user_id'], $updates);
     }
@@ -81,5 +71,28 @@ class DeviceService
             throw new \Exception('Device not found with uuid: ' . $uuid);
         }
         return $device->id;
+    }
+
+    public function ensureUserDevice(int $userId): UserDevice
+    {
+        $device = UserDevice::where('user_id', $userId)->first();
+
+        if ($device) {
+            return $device;
+        }
+
+        $device = UserDevice::create([
+            'user_id' => $userId,
+            'uuid' => Str::uuid()->toString(),
+            'timezone' => config('app.timezone'),
+            'locale' => app()->getLocale(),
+        ]);
+
+        UserTracking::where('user_id', $userId)
+            ->update([
+                'device_id' => $device->id
+            ]);
+
+        return $device;
     }
 }
