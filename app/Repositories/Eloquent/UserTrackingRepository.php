@@ -62,35 +62,48 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
     }
 
     // EVENT 4
-    public function getOrCreateUser(int $userId): ?UserTracking
+   public function getOrCreateUser(int $userId): ?UserTracking
     {
-
-        $userTracking = UserTracking::where('user_id', $userId)->first();
         $user = User::find($userId);
-        if (!$userTracking) {
-            DB::transaction(function () use ($user, &$userTracking) {
-                $userDevice = UserDevice::create([
-                    'user_id' => $user->id,
-                    'uuid' => Str::uuid()->toString(),
-                    'timezone' => config('app.timezone'),
-                    'locale' => app()->getLocale(),
-                    // 'app_version' => '1.0.0',
-                ]);
+        if (!$user) return null;
 
-                $userTracking = UserTracking::create([
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                    'first_name' => $user->name,
-                    'device_id' => $userDevice->id,
-                    'installed_at' => $user->created_at,
-                    'primary_reason_to_use' => $user->reason
-                ]);
-            });
+        return DB::transaction(function () use ($user, $userId) {
 
-            return $userTracking;
-        }
+            $userTracking = UserTracking::where('user_id', $userId)->lockForUpdate()->first();
+            if ($userTracking) return $userTracking;
 
-        return $userTracking;
+            $userTrackingByEmail = UserTracking::where('email', $user->email)
+                ->lockForUpdate()
+                ->latest('id')
+                ->first();
+
+            if ($userTrackingByEmail) {
+
+                if ($userTrackingByEmail->device_id) {
+                    UserDevice::where('id', $userTrackingByEmail->device_id)
+                        ->update(['user_id' => $userId]);
+                }
+
+                $userTrackingByEmail->update(['user_id' => $userId]);
+
+                return $userTrackingByEmail;
+            }
+
+            $userDevice = UserDevice::create([
+                'user_id' => $user->id,
+                'uuid' => Str::uuid()->toString(),
+                'timezone' => config('app.timezone'),
+                'locale' => app()->getLocale(),
+            ]);
+
+            return UserTracking::create([
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'first_name' => $user->name,
+                'device_id' => $userDevice->id,
+                'installed_at' => $user->created_at,
+            ]);
+        });
     }
 
     public function setPrimaryReason(UserTracking $tracking, string $reason): bool

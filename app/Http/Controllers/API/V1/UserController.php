@@ -22,14 +22,6 @@ class UserController extends BaseController
         $originalName = $user->name;
         $originalEmail = $user->email;
 
-        $userTracking = $user->tracking;
-        
-        if ($userTracking) {
-            $userTracking->update([
-                'email' => 'deleted_' . time() . '_' . $originalEmail,
-            ]);
-        }
-
         $user->update([
             'name' => 'Deleted ' . $originalName,
             'email' => 'deleted_' . time() . '_' . $originalEmail,

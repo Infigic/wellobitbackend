@@ -125,23 +125,8 @@ class EventController extends BaseController
             'tracking' => null,
         ];
 
-        try {
-            $result['device'] =
-                $this->deviceService->handleAppleWatchConnected($validated);
-        } catch (\Exception $e) {
-            $result['device'] = ['error' => $e->getMessage()];
-        }
-
-        try {
-            $result['tracking'] =
-                $this->trackingService->handleAppleWatchConnected($validated);
-        } catch (\Exception $e) {
-            $result['tracking'] = ['error' => $e->getMessage()];
-        }
-
-        if (isset($result['device']['error']) && isset($result['tracking']['error'])) {
-            throw new \Exception('There are no data has change.');
-        }
+        $result['tracking'] = $this->trackingService->handleAppleWatchConnected($validated);
+        $result['device'] = $this->deviceService->handleAppleWatchConnected($validated);
 
         return $this->sendResponse($result, 'Apple Watch connected event processed successfully.');
     }

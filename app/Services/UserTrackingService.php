@@ -78,12 +78,8 @@ class UserTrackingService
      * EVENT 5A: apple_watch_connected
      */
     public function handleAppleWatchConnected(array $data)
-    {
-        $userTracking = UserTracking::where('user_id', $data['user_id'])->first();
-
-        if ($userTracking->has_apple_watch == $data['has_apple_watch']) {
-            throw new \Exception('No changes detected for apple watch connection status.');
-        }
+    {   
+        $userTracking = $this->trackingRepo->getOrCreateUser($data['user_id']);
 
         return $this->trackingRepo->updateAppleWatchConnected($data['user_id'], [
             'has_apple_watch' => $data['has_apple_watch'] ?? null,
@@ -97,7 +93,8 @@ class UserTrackingService
      */
     public function handleHealthConnected(array $data)
     {
-        $userTracking = UserTracking::where('user_id', $data['user_id'])->first();
+        
+        $userTracking = $this->trackingRepo->getOrCreateUser($data['user_id']);
 
         if ($userTracking->apple_health_connected == $data['apple_health_connected']) {
             throw new \Exception('No changes detected for health connection status.');

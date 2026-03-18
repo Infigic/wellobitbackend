@@ -9,9 +9,16 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\UserDevice;
 use Illuminate\Support\Str;
+use App\Repositories\Contracts\UserTrackingRepositoryInterface;
 
 class SubscriptionService
 {
+
+    public function __construct(
+        protected UserTrackingRepositoryInterface $userTrackingRepo
+    ) {} 
+
+
     /**
      * Handle event: trial_started
      */
@@ -23,7 +30,7 @@ class SubscriptionService
                 ->lockForUpdate()
                 ->first();
 
-            $userTracking = $this->getOrCreateUser($userId);
+                $userTracking = $this->userTrackingRepo->getOrCreateUser($userId);
 
             if ($subscription && $subscription->trial_started_at) {
 
@@ -82,7 +89,7 @@ class SubscriptionService
             $paidStartedAt = Carbon::parse($payload['paid_started_at'])
                 ->toDateTimeString();
 
-            $tracking = $this->getOrCreateUser($userId);
+            $tracking = $this->userTrackingRepo->getOrCreateUser($userId);
 
             $subscription = Subscription::where('user_id', $userId)
                 ->lockForUpdate()
@@ -133,42 +140,6 @@ class SubscriptionService
             ];
 
         });
-    }
-
-
-    public function getOrCreateUser(int $userId): UserTracking
-    {
-        $user = User::find($userId);
-
-        if (!$user) {
-            throw new \Exception("User $userId not found");
-        }
-
-        $userTracking = UserTracking::where('user_id', $userId)
-            ->lockForUpdate()
-            ->first();
-        
-        if (!$userTracking) {
-            $userDevice = UserDevice::create([
-                'user_id' => $user->id,
-                'uuid' => Str::uuid()->toString(),
-                'timezone' => config('app.timezone'),
-                'locale' => app()->getLocale(),
-            ]);
-
-            $userTracking = UserTracking::create([
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'first_name' => $user->name,
-                'device_id' => $userDevice->id,
-                'installed_at' => $user->created_at,
-                'primary_reason_to_use' => $user->reason
-            ]);
-
-            return $userTracking;
-        }
-
-        return $userTracking;
     }
 
     private function syncTrialToTracking(UserTracking $tracking, Subscription $subscription): void
