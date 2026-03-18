@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\V4;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\UserTracking;
 
 class UserController extends BaseController
 {
@@ -15,7 +16,7 @@ class UserController extends BaseController
             $personalisedDataStored = !empty($user->age) || !empty($user->gender) || !empty($user->activity_level) || !empty($user->reason);
 
             $trialStatus = 'NotStarted';
-            $tracking = $user->tracking;
+            $tracking = UserTracking::where('email', $user->email)->first();
             $trialStartDate = $tracking->trial_started_at ?? null;
             
             if ($tracking && $tracking->trial_started_at) {
