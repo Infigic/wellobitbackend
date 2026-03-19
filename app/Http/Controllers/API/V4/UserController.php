@@ -18,7 +18,7 @@ class UserController extends BaseController
             $trialStatus = 'NotStarted';
             $tracking = UserTracking::where('email', $user->email)->first();
             $trialStartDate = $tracking->trial_started_at ?? null;
-            
+            $trial_ends_at = $tracking->trial_ends_at ?? null;
             if ($tracking && $tracking->trial_started_at) {
                 if ($tracking->trial_ends_at && now()->greaterThan($tracking->trial_ends_at)) {
                     $trialStatus = 'Expired';
@@ -31,7 +31,8 @@ class UserController extends BaseController
             $userData['personalised_data_stored'] = $personalisedDataStored;
             $userData['trialStatus'] = $trialStatus;
             $userData['trialStartDate'] = $trialStartDate;
-
+            $userData['trialEndsAt'] = $trial_ends_at;
+            
             return $this->sendResponse($userData, 'Profile detail retrieved successfully.');
         } else {
             return $this->sendError('Invalid request', ['error' => 'User not found']);
