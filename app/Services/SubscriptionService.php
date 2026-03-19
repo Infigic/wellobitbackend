@@ -26,11 +26,34 @@ class SubscriptionService
     {
         return DB::transaction(function () use ($userId, $data) {
 
-            $subscription = Subscription::where('user_id', $userId)
+            $user = User::find($userId);
+            if (!$user) {
+                return [
+                    'success' => false,
+                    'message' => 'User not found',
+                ];
+            }
+
+            $email = $user->email;
+
+            $existingTracking = UserTracking::where('email', $email)
+                ->whereNotNull('trial_started_at')
                 ->lockForUpdate()
                 ->first();
 
+            if ($existingTracking) {
+                return [
+                    'success' => true,
+                    'status'  => 'already_used',
+                    'message' => 'This email has already used trial',
+                ];
+            }
+
             $userTracking = $this->userTrackingRepo->getOrCreateUser($userId);
+
+            $subscription = Subscription::where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
 
             $trialStartedAt = Carbon::parse($data['trial_started_at'])->format('Y-m-d H:i:s');
             $trialEndsAt    = Carbon::parse($data['trial_ends_at'])->format('Y-m-d H:i:s');
@@ -39,21 +62,22 @@ class SubscriptionService
                 $subscription = Subscription::create([
                     'user_id' => $userId,
                     'plan_name' => $data['plan_name'],
+                    'trial_started_at' => $trialStartedAt,
+                    'trial_ends_at'    => $trialEndsAt,
+                ]);
+            } else {
+                $subscription->update([
+                    'plan_name'        => $data['plan_name'],
+                    'trial_started_at' => $trialStartedAt,
+                    'trial_ends_at'    => $trialEndsAt,
                 ]);
             }
-
-            $subscription->update([
-                'plan_name'        => $data['plan_name'],
-                'trial_started_at' => $trialStartedAt,
-                'trial_ends_at'    => $trialEndsAt,
-            ]);
 
             $this->syncTrialToTracking($userTracking, $subscription);
 
             return [
                 'success' => true,
-                'status'  => 'trial started',
-                'message' => 'Subscription trial completed',
+                'message' => 'Trial started',
                 'data'    => $subscription,
             ];
         });

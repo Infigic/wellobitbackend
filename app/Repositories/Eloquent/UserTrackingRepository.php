@@ -62,7 +62,7 @@ class UserTrackingRepository implements UserTrackingRepositoryInterface
     }
 
     // EVENT 4
-   public function getOrCreateUser(int $userId): ?UserTracking
+    public function getOrCreateUser(int $userId): ?UserTracking
     {
         $user = User::find($userId);
         if (!$user) return null;
