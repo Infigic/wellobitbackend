@@ -29,6 +29,18 @@
                             <input type="name" class="form-control" name="email" id="email"
                                 placeholder="Enter Email" value="{{ old('email', $user->email) }}">
                         </div>
+                        <div class = "form-group">
+                            <label for = "trial_started_at">Trial Started At</label>
+                            <input type="datetime-local" class="form-control" name="trial_started_at" id="trial_started_at"
+                                placeholder="Enter Trial Started At"
+                                value="{{ old('trial_started_at', $tracking->trial_started_at ? $tracking->trial_started_at->format('Y-m-d\TH:i') : '') }}">
+                        </div>
+                        <div class="form-group">
+                            <label for = "trial_ends_at">Trial Ends At</label>
+                            <input type="datetime-local" class="form-control" name="trial_ends_at" id="trial_ends_at"
+                                placeholder="Enter Trial Ends At"
+                                value="{{ old('trial_ends_at', $tracking->trial_ends_at ? $tracking->trial_ends_at->format('Y-m-d\TH:i') : '') }}">
+                        </div>
                         <div class="form-group">
                             <label for="is_active">Status</label>
                             <select class="form-select" name="is_active" id="is_active">

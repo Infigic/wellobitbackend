@@ -6,9 +6,17 @@ use App\DataTables\UsersDataTable;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Models\UserTracking;
+use App\Services\SubscriptionService;
 
 class UserController extends Controller
 {
+
+    public function __construct(SubscriptionService $subscriptionService)
+    {
+        $this->subscriptionService = $subscriptionService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -56,7 +64,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('users.edit', ['user' => $user]);
+        $tracking = UserTracking::where('email', $user->email)->first();
+        return view('users.edit', ['user' => $user, 'tracking' => $tracking]);
     }
 
     public function EditProfile()
@@ -73,8 +82,12 @@ class UserController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|unique:users,email,' . $user->id,
             'is_active' => 'sometimes|boolean',
+            'trial_started_at' => 'nullable|date',
+            'trial_ends_at' => 'nullable|date|after_or_equal:trial_started_at',
+            'plan_name' => 'nullable|string',
         ]);
 
+        $this->subscriptionService->updateTrialInfo($user->id, $validated);
         $user->update($validated);
 
         return redirect()->route('users.index')->with('success', 'Profile updated successfully.');
