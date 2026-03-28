@@ -142,4 +142,26 @@ class SubscriptionService
             'is_paid'         => true,
         ]);
     }
+
+    public function updateTrialInfo(int $userId, array $data)
+    {
+        $tracking = $this->userTrackingRepo->getOrCreateUser($userId);
+
+        if (!$tracking) {
+            throw new \Exception('UserTracking record not found for user_id: ' . $userId);
+        }
+
+        $subscription = Subscription::where('user_id', $userId)->first();
+
+        if (!$subscription) {
+            throw new \Exception('Subscription record not found for user_id: ' . $userId);
+        }
+
+        $subscription->update([
+            'trial_started_at' => Carbon::parse($data['trial_started_at'])->toDateTimeString(),
+            'trial_ends_at'    => Carbon::parse($data['trial_ends_at'])->toDateTimeString(),
+        ]);
+
+        return $this->syncTrialToTracking($tracking, $subscription);
+    }
 }
