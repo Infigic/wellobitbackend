@@ -31,4 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'systeme' => [
+        'api_key' => env('SYSTEME_API_KEY'),
+        'tags' => env('SYSTEME_TAGS')
+    ],
 ];
