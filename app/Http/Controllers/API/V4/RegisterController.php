@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Services\UserTrackingService;
 use App\Services\DeviceService;
+use App\Events\UserRegistered;
 
 class RegisterController extends BaseController
 {
@@ -276,6 +277,8 @@ class RegisterController extends BaseController
       }
     }
 
+    event(new UserRegistered($user, $platform));
+
     $token = $user->createToken('Aayoo')->plainTextToken;
 
     return $this->sendResponse([
@@ -439,6 +442,8 @@ class RegisterController extends BaseController
       'otp' => null,
       'otp_expires_at' => null,
     ]);
+
+    event(new UserRegistered($user, 'simple'));
 
     $token = $user->createToken('Aayoo')->plainTextToken;
 
