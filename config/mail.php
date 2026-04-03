@@ -46,7 +46,7 @@ return [
 //            'local_domain' => env('MAIL_EHLO_DOMAIN'),
 //        ],
         
-        'smtp' => [
+        /*'smtp' => [
             'transport' => 'smtp',
             'url' => env('MAIL_URL'),
             'host' => 'email-smtp.ca-central-1.amazonaws.com',
@@ -56,7 +56,20 @@ return [
             'password' => 'BL6dfXO8I/CSUXvmYfMY6eGoBURnbXHI4KfbkU3ESnVw',
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
+        ],*/
+
+        'smtp' => [
+            'transport' => 'smtp',
+            'url' => env('MAIL_URL'),
+            'host' => 'smtp.sendgrid.net',
+            'port' => 465,
+            'encryption' =>'ssl',
+            'username' => 'apikey',
+            'password' => '',
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
+
 
         'ses' => [
             'transport' => 'ses',
@@ -123,8 +136,8 @@ return [
     */
 
     'from' => [
-        'address' => 'kartik@aayoo.ai',
-        'name' => 'Aayoo',
+        'address' => 'alert@wellobit.com',
+        'name' => 'Wellobit',
     ],
 
     /*
