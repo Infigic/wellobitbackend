@@ -279,6 +279,25 @@ class RegisterController extends BaseController
 
     event(new UserRegistered($user, $platform));
 
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => 'https://sendy.wellobit.com/subscribe',
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'POST',
+      CURLOPT_POSTFIELDS => array('api_key' => 'qFHiGdDPC2JghNE2zhtt','name' => $user->name,'email' => $user->email,'list' => 'rOC763JLXfN0Uv3VAy00R06A','boolean' => 'true'),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+// echo $response;
+
     $token = $user->createToken('Aayoo')->plainTextToken;
 
     return $this->sendResponse([
@@ -442,8 +461,27 @@ class RegisterController extends BaseController
       'otp' => null,
       'otp_expires_at' => null,
     ]);
+    $curl = curl_init();
 
     event(new UserRegistered($user, 'simple'));
+
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => 'https://sendy.wellobit.com/subscribe',
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'POST',
+      CURLOPT_POSTFIELDS => array('api_key' => 'qFHiGdDPC2JghNE2zhtt','name' => $user->name,'email' => $user->email,'list' => 'rOC763JLXfN0Uv3VAy00R06A','boolean' => 'true'),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+
+// echo $response;
 
     $token = $user->createToken('Aayoo')->plainTextToken;
 

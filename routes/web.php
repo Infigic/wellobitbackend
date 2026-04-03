@@ -11,7 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AppConfigController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\MailTestController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Auth routes with disabled register/reset
+//Route::get('/test-otp-mail', [MailTestController::class, 'testOtpMail']);
 Auth::routes(['register' => false, 'reset' => false]);
 Route::get('phpinfo', function () {
     phpinfo();
