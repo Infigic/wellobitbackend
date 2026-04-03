@@ -173,9 +173,38 @@ class RegisterController extends BaseController
       return $this->sendError('Token validation failed: ' . $e->getMessage(), [], 401);
     }
 
-    $email = $decodedToken->email ?? null;
+    $email = isset($decodedToken->email)
+      ? strtolower(trim($decodedToken->email))
+      : null;
     $name = $request->name ?? 'Guest';
     $isNewUser = false;
+
+    if ($email) {
+      $passwordAccount = User::withTrashed()
+        ->whereRaw('LOWER(email) = ?', [$email])
+        ->where(function ($query) {
+          $query->where('platform', 'simple')
+            ->orWhereNull('platform');
+        })
+        ->first();
+
+      if ($passwordAccount) {
+        $message = "This email is already registered with a password. Sign in with your password instead, or reset it if you've forgotten.";
+        return $this->sendError($message, ['error' => $message], 422);
+      }
+
+      $socialAccount = User::withTrashed()
+        ->whereRaw('LOWER(email) = ?', [$email])
+        ->whereIn('platform', ['google', 'apple'])
+        ->where('platform', '!=', $platform)
+        ->first();
+
+      if ($socialAccount) {
+        $providerName = ucfirst($socialAccount->platform);
+        $message = "This email is already registered using {$providerName} Sign-In. Sign in with {$providerName} signIn instead.";
+        return $this->sendError($message, ['error' => $message], 422);
+      }
+    }
 
     // 1. Match by provider_id 
     $user = User::where('provider_id', $providerId)
@@ -201,7 +230,7 @@ class RegisterController extends BaseController
 
     // 2. Fallback match by email if provider_id not found 
     if (!$user && $email) {
-      $user = User::where('email', $email)->first();
+      $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
       // Update if email found but no provider_id
       if ($user && !$user->provider_id) {
@@ -312,7 +341,7 @@ class RegisterController extends BaseController
 
       // 3. User not found
       if (!$user) {
-          return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials'], 401);
+          return $this->sendError('Unauthorised.', ['error' => 'Looks like you\'re new! Join thousands finding calm every day, create your account.'], 401);
       }
 
       // 6. Soft delete check
@@ -335,7 +364,7 @@ class RegisterController extends BaseController
 
       // 5. Password check
       if (!Hash::check($request->password, $user->password)) {
-          return $this->sendError('Unauthorised.', ['error' => 'Invalid credentials'], 401);
+          return $this->sendError('Unauthorised.', ['error' => 'Hmm, that doesn\'t look right. Try again or reset your password. We\'ll get you back in.'], 401);
       }
 
       /**
@@ -555,6 +584,14 @@ class RegisterController extends BaseController
     // Active status check
     if (!$user->is_active) {
       return $this->sendError('Unauthorised.', ['error' => 'Account is not active.'], 403);
+    }
+
+    if (in_array($user->platform, ['google', 'apple'], true)) {
+      return $this->sendError(
+        'Unauthorised.',
+        ['error' => 'This email used using ' . $user->platform . ' signIn'],
+        422
+      );
     }
 
     $otp = rand(1001, 9998);
