@@ -10,6 +10,7 @@ use App\Http\Controllers\API\ReadinessScoreController;
 use App\Http\Controllers\API\MindfulnessReportController;
 use App\Http\Controllers\API\FaqCategoryController;
 use App\Http\Controllers\API\FaqController;
+use App\Http\Controllers\API\HrvLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // HRV Logs
     Route::get('hrvs', [HrvController::class, 'index'])->name('api.hrvs.index');
     Route::post('hrvs', [HrvController::class, 'store'])->name('api.hrvs.store');
+
+    // Add HRV Logs
+    Route::post('hrvs/addlog', [HrvLogController::class, 'store'])->name('api.hrvs.logs.store');
 
     Route::get('home', [HrvController::class, 'home'])->name('api.hrvs.home');
 
