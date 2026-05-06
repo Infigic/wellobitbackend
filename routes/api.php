@@ -10,6 +10,7 @@ use App\Http\Controllers\API\ReadinessScoreController;
 use App\Http\Controllers\API\MindfulnessReportController;
 use App\Http\Controllers\API\FaqCategoryController;
 use App\Http\Controllers\API\FaqController;
+use App\Http\Controllers\API\HrvLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +51,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('hrvs', [HrvController::class, 'index'])->name('api.hrvs.index');
     Route::post('hrvs', [HrvController::class, 'store'])->name('api.hrvs.store');
 
+    // Add HRV Logs
+    Route::post('hrvs/addlog', [HrvLogController::class, 'store'])->name('api.hrvs.logs.store');
+    Route::get('hrv/logs', [HrvLogController::class, 'index'])->name('api.hrv.logs.index');
+    Route::delete('hrv/logs/{hrv_uuid}', [HrvLogController::class, 'destroy'])->name('api.hrv.logs.destroy');
+
     Route::get('home', [HrvController::class, 'home'])->name('api.hrvs.home');
 
     Route::prefix('faq-categories')->group(function () {
@@ -80,5 +86,3 @@ Route::prefix('faqs')->group(function () {
         Route::delete('{id}', [FaqController::class, 'destroy'])->whereNumber('id'); // Delete
     });
 });
-
-
