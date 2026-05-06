@@ -53,6 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Add HRV Logs
     Route::post('hrvs/addlog', [HrvLogController::class, 'store'])->name('api.hrvs.logs.store');
+    Route::get('hrv/logs', [HrvLogController::class, 'index'])->name('api.hrv.logs.index');
+    Route::delete('hrv/logs/{hrv_uuid}', [HrvLogController::class, 'destroy'])->name('api.hrv.logs.destroy');
 
     Route::get('home', [HrvController::class, 'home'])->name('api.hrvs.home');
 
@@ -84,5 +86,3 @@ Route::prefix('faqs')->group(function () {
         Route::delete('{id}', [FaqController::class, 'destroy'])->whereNumber('id'); // Delete
     });
 });
-
-

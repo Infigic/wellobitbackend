@@ -48,4 +48,38 @@ class HrvLogController extends BaseController
 
         return $this->sendResponse($log, 'HRV log saved successfully.');
     }
+
+    public function index(Request $request)
+    {
+        $userId = Auth::id();
+
+        $logs = HrvLog::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($log) {
+                return [
+                    'log_id'     => 'log_' . $log->id,
+                    'hrv_uuid'   => $log->hrv_uuid,
+                    'mood'       => $log->mood,
+                    'activity'   => $log->activity,
+                    'notes'      => $log->notes,
+                    'created_at' => $log->created_at,
+                ];
+            });
+
+        return $this->sendResponse($logs, 'HRV logs retrieved successfully.');
+    }
+
+    public function destroy($hrv_uuid)
+    {
+        $deleted = HrvLog::where('hrv_uuid', $hrv_uuid)
+            ->where('user_id', Auth::id())
+            ->delete();
+
+        if (!$deleted) {
+            return $this->sendError('Log not found or not belongs to user.', [], 404);
+        }
+
+        return $this->sendResponse([], 'HRV log deleted successfully.');
+    }
 }
