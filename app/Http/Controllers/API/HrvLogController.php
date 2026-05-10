@@ -13,8 +13,8 @@ class HrvLogController extends BaseController
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'hrv_uuid' => 'required|exists:hrvs,sample_id',
-            'mood' => 'nullable|string',
+            'hrv_uuid' => 'required|string',
+            'mood'     => 'nullable|string',
             'activity' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
@@ -25,29 +25,32 @@ class HrvLogController extends BaseController
 
         $userId = Auth::id();
 
-        $hrv = Hrv::where('sample_id', $request->hrv_uuid)
-            ->where('user_id', $userId)
-            ->first();
+        $existingLog = HrvLog::where('hrv_uuid', $request->hrv_uuid)->first();
 
-        if (!$hrv) {
-            return $this->sendError('HRV not found or not belongs to user', [], 404);
-        }
+        if ($existingLog) {
+            if ($existingLog->user_id !== $userId) {
+                return $this->sendError('This HRV record has already been used by another user.', [], 403);
+            }
 
-        $log = HrvLog::updateOrCreate(
-            [
-                'hrv_uuid' => $request->hrv_uuid,
-                'user_id' => $userId,
-            ],
-            [
-                'hrv_id' => $hrv->id,
-                'mood' => $request->mood,
+            $existingLog->update([
+                'mood'     => $request->mood,
                 'activity' => $request->activity,
-                'notes' => $request->notes,
-            ]
-        );
+                'notes'    => $request->notes,
+            ]);
 
-        return $this->sendResponse($log, 'HRV log saved successfully.');
+            return $this->sendResponse($existingLog, 'HRV log updated successfully.');
     }
+
+    $log = HrvLog::create([
+        'hrv_uuid' => $request->hrv_uuid,
+        'user_id'  => $userId,
+        'mood'     => $request->mood,
+        'activity' => $request->activity,
+        'notes'    => $request->notes,
+    ]);
+
+    return $this->sendResponse($log, 'HRV log created successfully.');
+}
 
     public function index(Request $request)
     {
