@@ -25,32 +25,25 @@ class HrvLogController extends BaseController
 
         $userId = Auth::id();
 
-        $existingLog = HrvLog::where('hrv_uuid', $request->hrv_uuid)->first();
-
-        if ($existingLog) {
-            if ($existingLog->user_id !== $userId) {
-                return $this->sendError('This HRV record has already been used by another user.', [], 403);
-            }
-
-            $existingLog->update([
+        $log = HrvLog::updateOrCreate(
+            [
+                'hrv_uuid' => $request->hrv_uuid,
+                'user_id'  => $userId,
+            ],
+            [
                 'mood'     => $request->mood,
                 'activity' => $request->activity,
                 'notes'    => $request->notes,
-            ]);
+            ]
+        );
 
-            return $this->sendResponse($existingLog, 'HRV log updated successfully.');
+        $message = $log->wasRecentlyCreated
+            ? 'HRV log created successfully.'
+            : 'HRV log updated successfully.';
+
+        return $this->sendResponse($log, $message);
+
     }
-
-    $log = HrvLog::create([
-        'hrv_uuid' => $request->hrv_uuid,
-        'user_id'  => $userId,
-        'mood'     => $request->mood,
-        'activity' => $request->activity,
-        'notes'    => $request->notes,
-    ]);
-
-    return $this->sendResponse($log, 'HRV log created successfully.');
-}
 
     public function index(Request $request)
     {
