@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\MindfulnessReportController;
 use App\Http\Controllers\API\V4\EventController;
 use App\Http\Controllers\API\V4\AppConfigController as V4AppConfigController;
+use App\Http\Controllers\API\V4\UserEarnedBadgeController as V4UserEarnedBadgeController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -66,6 +67,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/mindfulness/reports', [MindfulnessReportController::class, 'storeReports']);
     Route::post('/mindfulness/reports/fetch', [MindfulnessReportController::class, 'fetchReportsByTimestamp']);
+
+    // User earn badge
+    Route::post('user/badges', [V4UserEarnedBadgeController::class, 'store'])->name('api4.user.badges.store');
 });
 
 Route::get('testtoken/{id}', function ($id) {

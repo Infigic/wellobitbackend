@@ -27,6 +27,7 @@ class UserController extends BaseController
                 }
             }
 
+            $user->load('earnedBadges');
             $userData = $user->makeHidden(['tracking'])->toArray();
             $userData['personalised_data_stored'] = $personalisedDataStored;
             $userData['trialStatus'] = $trialStatus;

@@ -83,4 +83,8 @@ class User extends Authenticatable
         return $this->hasMany(BreathSession::class, 'user_id');
     }
 
+    public function earnedBadges()
+    {
+        return $this->hasMany(UserEarnedBadge::class);
+    }
 }
