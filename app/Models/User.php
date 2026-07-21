@@ -47,6 +47,7 @@ class User extends Authenticatable
         'deleted_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'age' => 'string',
     ];
 
     protected $appends = ['profile_image_url'];
