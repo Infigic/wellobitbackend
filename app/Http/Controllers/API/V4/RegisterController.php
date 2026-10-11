@@ -112,7 +112,14 @@ class RegisterController extends BaseController
               'otp_expires_at' => $expiresAt,
           ]);
 
-          $this->sendOtpEmail($user->email, $otp, $user->name);
+          $emailSent = $this->sendOtpEmail($user->email, $otp, $user->name);
+
+          if (!$emailSent) {
+              return $this->sendResponse([
+                  'state' => 'OTP_PENDING',
+                  'email' => $user->email,
+              ], 'Registered, but failed to send verification email. Please request a new code.');
+          }
 
           return $this->sendResponse([
               'state' => 'OTP_PENDING',
@@ -558,9 +565,17 @@ class RegisterController extends BaseController
     return $this->sendResponse([], 'A new OTP has been sent to your email.');
   }
 
-  public static function sendOtpEmail($email, $otp, $name)
+  public static function sendOtpEmail($email, $otp, $name): bool
   {
-     Mail::to($email)->send(new OtpMail($name, $otp));
+    try {
+      Mail::to($email)->send(new OtpMail($name, $otp));
+      return true;
+    } catch (\Throwable $e) {
+      Log::error('Send OTP Mail Failed for email ' . $email . ': ' . $e->getMessage(), [
+        'trace' => $e->getTraceAsString(),
+      ]);
+      return false;
+    }
   }
 
   protected function decodeIdToken(string $idToken, string $platform): object
