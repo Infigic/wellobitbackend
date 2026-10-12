@@ -145,21 +145,24 @@ class SubscriptionService
 
     public function updateTrialInfo(int $userId, array $data)
     {
+        if (empty($data['trial_started_at']) && empty($data['trial_ends_at'])) {
+            return null;
+        }
+
         $tracking = $this->userTrackingRepo->getOrCreateUser($userId);
 
         if (!$tracking) {
             throw new \Exception('UserTracking record not found for user_id: ' . $userId);
         }
 
-        $subscription = Subscription::where('user_id', $userId)->first();
-
-        if (!$subscription) {
-            throw new \Exception('Subscription record not found for user_id: ' . $userId);
-        }
+        $subscription = Subscription::firstOrCreate(
+            ['user_id' => $userId],
+            ['plan_name' => $data['plan_name'] ?? 'trial']
+        );
 
         $subscription->update([
-            'trial_started_at' => Carbon::parse($data['trial_started_at'])->toDateTimeString(),
-            'trial_ends_at'    => Carbon::parse($data['trial_ends_at'])->toDateTimeString(),
+            'trial_started_at' => !empty($data['trial_started_at']) ? Carbon::parse($data['trial_started_at'])->toDateTimeString() : null,
+            'trial_ends_at'    => !empty($data['trial_ends_at']) ? Carbon::parse($data['trial_ends_at'])->toDateTimeString() : null,
         ]);
 
         return $this->syncTrialToTracking($tracking, $subscription);
